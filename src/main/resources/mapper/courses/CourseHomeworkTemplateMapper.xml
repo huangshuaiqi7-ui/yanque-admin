@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.courses.mapper.CourseHomeworkTemplateMapper">
+    <resultMap id="TemplateMap" type="cn.yanque.modules.courses.pojo.entity.CourseHomeworkTemplateEntity">
+        <id property="id" column="id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="teachingMode" column="teaching_mode"/>
+        <result property="stageName" column="stage_name"/>
+        <result property="dayNumber" column="day_number"/>
+        <result property="contentObjectKey" column="content_object_key"/>
+        <result property="contentFileName" column="content_file_name"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <sql id="BaseColumns">
+        id, course_id, teaching_mode, stage_name, day_number, content_object_key,
+        content_file_name, status, remark, created_at, updated_at
+    </sql>
+    <select id="selectByCourseId" resultMap="TemplateMap">
+        select <include refid="BaseColumns"/> from course_homework_template
+        where course_id = #{courseId}
+        order by case when day_number is null then 0 else day_number end, stage_name, id
+    </select>
+    <select id="selectById" resultMap="TemplateMap">
+        select <include refid="BaseColumns"/> from course_homework_template where id = #{id}
+    </select>
+    <select id="countDimension" resultType="int">
+        select count(*) from course_homework_template
+        where course_id = #{courseId} and teaching_mode = #{teachingMode}
+        <choose>
+            <when test="teachingMode == 'ONLINE'">and stage_name = #{stageName}</when>
+            <otherwise>and day_number = #{dayNumber}</otherwise>
+        </choose>
+        <if test="excludeId != null">and id != #{excludeId}</if>
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into course_homework_template
+        (course_id, teaching_mode, stage_name, day_number, content_object_key,
+         content_file_name, status, remark, created_at, updated_at)
+        values
+        (#{courseId}, #{teachingMode}, #{stageName}, #{dayNumber}, #{contentObjectKey},
+         #{contentFileName}, #{status}, #{remark}, now(), now())
+    </insert>
+    <update id="updateById">
+        update course_homework_template
+        set stage_name = #{stageName}, day_number = #{dayNumber},
+            content_object_key = #{contentObjectKey}, content_file_name = #{contentFileName},
+            status = #{status}, remark = #{remark}, updated_at = now()
+        where id = #{id}
+    </update>
+    <delete id="deleteById">delete from course_homework_template where id = #{id}</delete>
+</mapper>

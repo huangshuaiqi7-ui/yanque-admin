@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.products.mapper.OrderProductMapper">
+  <select id="selectPage" resultType="cn.yanque.modules.products.pojo.entity.OrderProductEntity">
+    SELECT * FROM order_product
+    <where><if test="keyword != null and keyword != ''">course_content LIKE CONCAT('%',#{keyword},'%')</if></where>
+    ORDER BY id DESC
+  </select>
+  <select id="selectById" resultType="cn.yanque.modules.products.pojo.entity.OrderProductEntity">SELECT * FROM order_product WHERE id=#{id}</select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO order_product(course_content,teaching_mode,price,created_at,updated_at)
+    VALUES(#{courseContent},#{teachingMode},#{price},NOW(),NOW())
+  </insert>
+  <update id="updateById">UPDATE order_product SET course_content=#{courseContent},teaching_mode=#{teachingMode},price=#{price},updated_at=NOW() WHERE id=#{id}</update>
+  <delete id="deleteById">DELETE FROM order_product WHERE id=#{id}</delete>
+</mapper>

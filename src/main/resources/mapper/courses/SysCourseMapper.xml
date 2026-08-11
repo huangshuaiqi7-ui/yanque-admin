@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.courses.mapper.SysCourseMapper">
+    <resultMap id="CourseMap" type="cn.yanque.modules.courses.pojo.entity.SysCourseEntity">
+        <id property="id" column="id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="courseDays" column="course_days"/>
+        <result property="teachingMode" column="teaching_mode"/>
+        <result property="materialPath" column="material_path"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <sql id="BaseColumns">id, course_name, course_days, teaching_mode, material_path, created_at, updated_at</sql>
+    <select id="selectPage" resultMap="CourseMap">
+        select <include refid="BaseColumns"/> from sys_course
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (course_name like concat('%', #{keyword}, '%')
+                or material_path like concat('%', #{keyword}, '%'))
+            </if>
+        </where>
+        order by id desc
+    </select>
+    <select id="selectById" resultMap="CourseMap">
+        select <include refid="BaseColumns"/> from sys_course where id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_course(course_name, course_days, teaching_mode, material_path, created_at, updated_at)
+        values(#{courseName}, #{courseDays}, #{teachingMode}, #{materialPath}, now(), now())
+    </insert>
+    <update id="updateById">
+        update sys_course set course_name = #{courseName}, course_days = #{courseDays},
+        teaching_mode = #{teachingMode}, material_path = #{materialPath}, updated_at = now()
+        where id = #{id}
+    </update>
+    <delete id="deleteById">delete from sys_course where id = #{id}</delete>
+    <select id="countClassReferences" resultType="int">
+        select count(*) from sys_class where course_id = #{courseId}
+    </select>
+</mapper>

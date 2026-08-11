@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.exampapers.mapper.ExamPaperMapper">
+  <select id="selectPage" resultType="cn.yanque.modules.exampapers.pojo.vo.resvo.ExamPaperRes">
+    SELECT p.*,c.course_name,(SELECT COUNT(*) FROM exam_paper_question pq WHERE pq.paper_id=p.id) question_count
+    FROM exam_paper p JOIN sys_course c ON c.id=p.course_id
+    <where>
+      <if test="courseId != null">AND p.course_id=#{courseId}</if>
+      <if test="stageName != null and stageName != ''">AND p.stage_name=#{stageName}</if>
+      <if test="paperName != null and paperName != ''">AND p.paper_name LIKE CONCAT('%',#{paperName},'%')</if>
+    </where>
+    ORDER BY p.id DESC
+  </select>
+  <select id="selectById" resultType="cn.yanque.modules.exampapers.pojo.entity.ExamPaperEntity">SELECT * FROM exam_paper WHERE id=#{id}</select>
+  <select id="selectDetail" resultType="cn.yanque.modules.exampapers.pojo.vo.resvo.ExamPaperRes">
+    SELECT p.*,c.course_name,(SELECT COUNT(*) FROM exam_paper_question pq WHERE pq.paper_id=p.id) question_count
+    FROM exam_paper p JOIN sys_course c ON c.id=p.course_id WHERE p.id=#{id}
+  </select>
+  <select id="selectQuestions" resultType="cn.yanque.modules.exampapers.pojo.vo.resvo.ExamPaperRes$QuestionRes">
+    SELECT pq.id,pq.paper_id,pq.question_id,q.question_content,q.question_type,q.difficulty,pq.question_score
+    FROM exam_paper_question pq JOIN exam_question q ON q.id=pq.question_id
+    WHERE pq.paper_id=#{paperId} ORDER BY pq.id
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO exam_paper(paper_name,course_id,stage_name,total_score,created_at,updated_at)
+    VALUES(#{paperName},#{courseId},#{stageName},#{totalScore},NOW(),NOW())
+  </insert>
+  <insert id="batchInsertQuestions">
+    INSERT INTO exam_paper_question(paper_id,question_id,question_score,created_at,updated_at) VALUES
+    <foreach collection="items" item="x" separator=",">(#{x.paperId},#{x.questionId},#{x.questionScore},NOW(),NOW())</foreach>
+  </insert>
+  <delete id="deleteQuestions">DELETE FROM exam_paper_question WHERE paper_id=#{paperId}</delete>
+  <delete id="deleteById">DELETE FROM exam_paper WHERE id=#{id}</delete>
+</mapper>

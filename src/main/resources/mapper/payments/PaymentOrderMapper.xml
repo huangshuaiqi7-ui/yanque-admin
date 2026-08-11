@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.payments.mapper.PaymentOrderMapper">
+    <resultMap id="PaymentOrderMap" type="cn.yanque.modules.payments.pojo.PaymentOrderEntity">
+        <id property="id" column="id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="studentPhone" column="student_phone"/>
+        <result property="studentName" column="student_name"/>
+        <result property="productId" column="product_id"/>
+        <result property="productContent" column="product_content"/>
+        <result property="teachingMode" column="teaching_mode"/>
+        <result property="orderAmount" column="order_amount"/>
+        <result property="refundedAmount" column="refunded_amount"/>
+        <result property="prepayOrderNo" column="prepay_order_no"/>
+        <result property="status" column="status"/>
+        <result property="uniqueOrderNo" column="unique_order_no"/>
+        <result property="paySuccessTime" column="pay_success_time"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="PaymentOrderColumns">
+        p.id, p.order_no, p.student_phone, p.student_name, p.product_id,
+        op.course_content as product_content, op.teaching_mode,
+        p.order_amount, p.refunded_amount, p.prepay_order_no, p.status,
+        p.unique_order_no, p.pay_success_time, p.created_at, p.updated_at
+    </sql>
+
+    <select id="selectPage" resultMap="PaymentOrderMap">
+        select <include refid="PaymentOrderColumns"/>
+        from order_payment p
+        left join order_product op on op.id = cast(p.product_id as unsigned)
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                and p.order_no like concat('%', #{orderNo}, '%')
+            </if>
+            <if test="studentName != null and studentName != ''">
+                and p.student_name like concat('%', #{studentName}, '%')
+            </if>
+            <if test="studentPhone != null and studentPhone != ''">
+                and p.student_phone like concat('%', #{studentPhone}, '%')
+            </if>
+            <if test="prepayOrderNo != null and prepayOrderNo != ''">
+                and p.prepay_order_no like concat('%', #{prepayOrderNo}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                and p.status = #{status}
+            </if>
+        </where>
+        order by p.id desc
+    </select>
+
+    <select id="selectByOrderNo" resultMap="PaymentOrderMap">
+        select <include refid="PaymentOrderColumns"/>
+        from order_payment p
+        left join order_product op on op.id = cast(p.product_id as unsigned)
+        where p.order_no = #{orderNo}
+    </select>
+
+    <select id="countOrderNo" resultType="int">
+        select count(*) from order_payment where order_no = #{orderNo}
+    </select>
+
+    <insert id="insert" parameterType="cn.yanque.modules.payments.pojo.PaymentOrderEntity" useGeneratedKeys="true" keyProperty="id">
+        insert into order_payment (order_no, student_phone, student_name, product_id, order_amount,
+                                   refunded_amount, prepay_order_no, status, unique_order_no,
+                                   pay_success_time, created_at, updated_at)
+        values (#{orderNo}, #{studentPhone}, #{studentName}, #{productId}, #{orderAmount},
+                #{refundedAmount}, #{prepayOrderNo}, #{status}, #{uniqueOrderNo},
+                #{paySuccessTime}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="updateProcessing">
+        update order_payment
+        set status = 'PROCESSING',
+            updated_at = now()
+        where order_no = #{orderNo}
+          and status = 'INIT'
+    </update>
+
+    <update id="updateSuccess">
+        update order_payment
+        set status = 'SUCCESS',
+            unique_order_no = #{uniqueOrderNo},
+            pay_success_time = #{paySuccessTime},
+            updated_at = now()
+        where order_no = #{orderNo}
+          and status in ('INIT', 'PROCESSING')
+    </update>
+
+    <update id="updateFail">
+        update order_payment
+        set status = 'FAIL',
+            updated_at = now()
+        where order_no = #{orderNo}
+          and status = 'INIT'
+    </update>
+
+    <update id="updatePrepayPaid">
+        update prepay_order
+        set order_status = 'PAID',
+            updated_at = now()
+        where order_no = #{orderNo}
+          and order_status = 'PENDING_PAYMENT'
+    </update>
+
+    <select id="selectStudentByPhone" resultType="cn.yanque.modules.students.pojo.entity.StudentEntity">
+        select id, student_no, student_name, student_phone, password, education, grade_year,
+               school, major, teaching_mode, class_id, status
+        from student
+        where student_phone = #{phone}
+    </select>
+
+    <insert id="insertStudent" parameterType="cn.yanque.modules.students.pojo.entity.StudentEntity" useGeneratedKeys="true" keyProperty="id">
+        insert into student (student_no, student_name, student_phone, password, education, grade_year,
+                             school, major, teaching_mode, status)
+        values (#{studentNo}, #{studentName}, #{studentPhone}, #{password}, #{education}, #{gradeYear},
+                #{school}, #{major}, #{teachingMode}, #{status})
+    </insert>
+
+    <update id="updateStudentProfile" parameterType="cn.yanque.modules.students.pojo.entity.StudentEntity">
+        update student
+        set password = #{password},
+            education = #{education},
+            grade_year = #{gradeYear},
+            school = #{school},
+            major = #{major},
+            teaching_mode = #{teachingMode},
+            updated_at = now()
+        where id = #{id}
+    </update>
+
+    <select id="countStudentNo" resultType="int">
+        select count(*) from student where student_no = #{studentNo}
+    </select>
+
+    <select id="countStudentProduct" resultType="int">
+        select count(*) from student_product
+        where student_id = #{studentId}
+          and product_id = #{productId}
+          and source_order_no = #{sourceOrderNo}
+    </select>
+
+    <insert id="insertStudentProduct">
+        insert into student_product (student_id, product_id, source_order_no, status, created_at, updated_at)
+        values (#{studentId}, #{productId}, #{sourceOrderNo}, 'ACTIVE', now(), now())
+    </insert>
+</mapper>

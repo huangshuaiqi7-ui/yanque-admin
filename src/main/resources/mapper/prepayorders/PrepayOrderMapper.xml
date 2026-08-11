@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.prepayorders.mapper.PrepayOrderMapper">
+  <select id="selectPage" resultType="cn.yanque.modules.prepayorders.pojo.entity.PrepayOrderEntity">
+    SELECT * FROM prepay_order
+    <where>
+      <if test="keyword != null and keyword != ''">AND (student_name LIKE CONCAT('%',#{keyword},'%') OR student_phone LIKE CONCAT('%',#{keyword},'%'))</if>
+      <if test="orderStatus != null and orderStatus != ''">AND order_status=#{orderStatus}</if>
+    </where> ORDER BY id DESC
+  </select>
+  <select id="selectById" resultType="cn.yanque.modules.prepayorders.pojo.entity.PrepayOrderEntity">SELECT * FROM prepay_order WHERE id=#{id}</select>
+  <select id="selectPendingByPhone" resultType="cn.yanque.modules.prepayorders.pojo.vo.resvo.PendingPayOrderRes">
+    SELECT o.id,o.order_no,o.student_name,o.student_phone,o.product_id,p.course_content product_content,
+      o.product_amount,o.discount_amount,(o.product_amount-o.discount_amount) payable_amount,o.order_status
+    FROM prepay_order o JOIN order_product p ON p.id=o.product_id
+    WHERE o.student_phone=#{phone} AND o.order_status='PENDING_PAYMENT'
+    ORDER BY o.id DESC LIMIT 1
+  </select>
+  <select id="selectPendingById" resultType="cn.yanque.modules.prepayorders.pojo.vo.resvo.PendingPayOrderRes">
+    SELECT o.id,o.order_no,o.student_name,o.student_phone,o.product_id,p.course_content product_content,
+      o.product_amount,o.discount_amount,(o.product_amount-o.discount_amount) payable_amount,o.order_status
+    FROM prepay_order o JOIN order_product p ON p.id=o.product_id
+    WHERE o.id=#{id}
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO prepay_order(order_no,student_name,student_phone,product_id,product_amount,discount_amount,order_status,created_at,updated_at)
+    VALUES(#{orderNo},#{studentName},#{studentPhone},#{productId},#{productAmount},#{discountAmount},#{orderStatus},NOW(),NOW())
+  </insert>
+  <update id="updateById">
+    UPDATE prepay_order SET student_name=#{studentName},student_phone=#{studentPhone},product_id=#{productId},
+      product_amount=#{productAmount},discount_amount=#{discountAmount},order_status=#{orderStatus},updated_at=NOW()
+    WHERE id=#{id}
+  </update>
+  <delete id="deleteById">DELETE FROM prepay_order WHERE id=#{id}</delete>
+</mapper>

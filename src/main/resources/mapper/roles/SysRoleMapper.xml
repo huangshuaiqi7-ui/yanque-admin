@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.roles.mapper.SysRoleMapper">
+    <resultMap id="RoleMap" type="cn.yanque.modules.roles.pojo.entity.SysRoleEntity">
+        <id property="id" column="id"/>
+        <result property="roleCode" column="role_code"/>
+        <result property="roleName" column="role_name"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <sql id="BaseColumns">id, role_code, role_name, description, status, created_at, updated_at</sql>
+    <select id="selectPage" resultMap="RoleMap">
+        select <include refid="BaseColumns"/> from sys_role
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (role_code like concat('%', #{keyword}, '%')
+                or role_name like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="roleCode != null and roleCode != ''">and role_code like concat('%', #{roleCode}, '%')</if>
+            <if test="roleName != null and roleName != ''">and role_name like concat('%', #{roleName}, '%')</if>
+            <if test="status != null and status != ''">and status = #{status}</if>
+        </where>
+        order by id desc
+    </select>
+    <select id="selectById" resultMap="RoleMap">select <include refid="BaseColumns"/> from sys_role where id = #{id}</select>
+    <select id="selectByCode" resultMap="RoleMap">select <include refid="BaseColumns"/> from sys_role where role_code = #{roleCode}</select>
+    <select id="countByIds" resultType="int">
+        select count(*) from sys_role where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_role(role_code, role_name, description, status, created_at, updated_at)
+        values(#{roleCode}, #{roleName}, #{description}, #{status}, now(), now())
+    </insert>
+    <update id="updateById">
+        update sys_role set role_code = #{roleCode}, role_name = #{roleName},
+        description = #{description}, status = #{status}, updated_at = now() where id = #{id}
+    </update>
+    <delete id="deleteById">delete from sys_role where id = #{id}</delete>
+    <select id="selectPermissionIds" resultType="java.lang.Long">
+        select permission_id from sys_role_permission where role_id = #{roleId}
+    </select>
+    <insert id="insertRolePermissions">
+        insert into sys_role_permission(role_id, permission_id, created_at) values
+        <foreach collection="permissionIds" item="permissionId" separator=",">
+            (#{roleId}, #{permissionId}, now())
+        </foreach>
+    </insert>
+    <delete id="deleteRolePermissions">delete from sys_role_permission where role_id = #{roleId}</delete>
+    <delete id="deleteUserRoles">delete from sys_user_role where role_id = #{roleId}</delete>
+    <select id="selectRoleCodesByUserId" resultType="java.lang.String">
+        select distinct r.role_code from sys_role r
+        inner join sys_user_role ur on ur.role_id = r.id
+        where ur.user_id = #{userId} and r.status = 'ACTIVE'
+    </select>
+    <select id="selectUserIdsByRoleId" resultType="java.lang.Long">
+        select user_id from sys_user_role where role_id = #{roleId}
+    </select>
+</mapper>

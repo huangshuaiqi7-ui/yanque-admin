@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.payments.mapper.RefundOrderMapper">
+    <resultMap id="RefundOrderMap" type="cn.yanque.modules.payments.pojo.RefundOrderEntity">
+        <id property="id" column="id"/>
+        <result property="refundOrderNo" column="refund_order_no"/>
+        <result property="paymentOrderNo" column="payment_order_no"/>
+        <result property="paymentAmount" column="payment_amount"/>
+        <result property="refundAmount" column="refund_amount"/>
+        <result property="status" column="status"/>
+        <result property="reason" column="reason"/>
+        <result property="uniqueRefundNo" column="unique_refund_no"/>
+        <result property="failReason" column="fail_reason"/>
+        <result property="refundSuccessTime" column="refund_success_time"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="RefundOrderColumns">
+        id, refund_order_no, payment_order_no, payment_amount, refund_amount, status,
+        reason, unique_refund_no, fail_reason, refund_success_time, created_at, updated_at
+    </sql>
+
+    <select id="selectPage" resultMap="RefundOrderMap">
+        select <include refid="RefundOrderColumns"/>
+        from order_refund
+        <where>
+            <if test="refundOrderNo != null and refundOrderNo != ''">
+                and refund_order_no like concat('%', #{refundOrderNo}, '%')
+            </if>
+            <if test="paymentOrderNo != null and paymentOrderNo != ''">
+                and payment_order_no like concat('%', #{paymentOrderNo}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectByRefundOrderNo" resultMap="RefundOrderMap">
+        select <include refid="RefundOrderColumns"/>
+        from order_refund
+        where refund_order_no = #{refundOrderNo}
+    </select>
+
+    <select id="countRefundOrderNo" resultType="int">
+        select count(*) from order_refund where refund_order_no = #{refundOrderNo}
+    </select>
+
+    <insert id="insert" parameterType="cn.yanque.modules.payments.pojo.RefundOrderEntity" useGeneratedKeys="true" keyProperty="id">
+        insert into order_refund (refund_order_no, payment_order_no, payment_amount, refund_amount,
+                                  status, reason, unique_refund_no, fail_reason,
+                                  refund_success_time, created_at, updated_at)
+        values (#{refundOrderNo}, #{paymentOrderNo}, #{paymentAmount}, #{refundAmount},
+                #{status}, #{reason}, #{uniqueRefundNo}, #{failReason},
+                #{refundSuccessTime}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="updateProcessing">
+        update order_refund
+        set status = 'PROCESSING',
+            updated_at = now()
+        where refund_order_no = #{refundOrderNo}
+          and status = 'INIT'
+    </update>
+
+    <update id="updateSuccess">
+        update order_refund
+        set status = 'SUCCESS',
+            unique_refund_no = #{uniqueRefundNo},
+            refund_success_time = #{refundSuccessTime},
+            updated_at = now()
+        where refund_order_no = #{refundOrderNo}
+          and status in ('INIT', 'PROCESSING', 'SUCCESS')
+    </update>
+
+    <update id="updateFail">
+        update order_refund
+        set status = 'FAIL',
+            fail_reason = #{failReason},
+            updated_at = now()
+        where refund_order_no = #{refundOrderNo}
+          and status in ('INIT', 'PROCESSING')
+    </update>
+
+    <update id="increasePaymentRefundedAmount">
+        update order_payment
+        set refunded_amount = refunded_amount + #{refundAmount},
+            updated_at = now()
+        where order_no = #{paymentOrderNo}
+    </update>
+</mapper>

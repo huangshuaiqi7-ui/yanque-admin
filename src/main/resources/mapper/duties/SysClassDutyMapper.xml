@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.duties.mapper.SysClassDutyMapper">
+    <select id="selectDateClasses"
+            resultType="cn.yanque.modules.duties.pojo.vo.resvo.ClassDutyDateClassRes">
+        select s.id as scheduleId, c.id as classId, c.class_period as classPeriod,
+               c.campus_id as campusId, ca.campus_location as campusName,
+               s.class_type as classType, s.course_content as courseContent,
+               duty.teacher_id as teacherId,
+               coalesce(nullif(u.real_name, ''), nullif(u.nickname, ''), u.username) as teacherName
+        from sys_class_schedule s
+        inner join sys_class c on c.id = s.class_id
+        inner join sys_campus ca on ca.id = c.campus_id
+        left join sys_class_duty duty on duty.id = (
+            select max(d1.id) from sys_class_duty d1
+            where d1.class_id = c.id and d1.duty_date = #{dutyDate}
+              and d1.duty_type = case when s.class_type = 'CLASS'
+                                      then 'EVENING_STUDY_CLASS' else 'SELF_STUDY_CLASS' end
+        )
+        left join sys_user u on u.id = duty.teacher_id
+        where s.schedule_date = #{dutyDate} and s.class_type in ('CLASS', 'SELF_STUDY')
+        order by ca.id, c.id
+    </select>
+
+    <select id="selectDateCampuses"
+            resultType="cn.yanque.modules.duties.pojo.vo.resvo.ClassDutyDateCampusRes">
+        select distinct ca.id as campusId, ca.campus_location as campusName,
+               duty.teacher_id as teacherId,
+               coalesce(nullif(u.real_name, ''), nullif(u.nickname, ''), u.username) as teacherName
+        from sys_class_schedule s
+        inner join sys_class c on c.id = s.class_id
+        inner join sys_campus ca on ca.id = c.campus_id
+        left join sys_class_duty duty on duty.id = (
+            select max(d1.id) from sys_class_duty d1
+            where d1.class_id is null and d1.campus_id = ca.id
+              and d1.duty_date = #{dutyDate} and d1.duty_type = 'EVENING_STUDY_CAMPUS'
+        )
+        left join sys_user u on u.id = duty.teacher_id
+        where s.schedule_date = #{dutyDate} and s.class_type = 'CLASS'
+        order by ca.id
+    </select>
+
+    <select id="countValidTeacher" resultType="int">
+        select count(distinct u.id)
+        from sys_user u
+        inner join sys_user_role ur on ur.user_id = u.id
+        inner join sys_role r on r.id = ur.role_id
+        where u.id = #{teacherId} and u.status = 'ACTIVE'
+          and r.status = 'ACTIVE' and r.role_code = 'TEACHER'
+    </select>
+
+    <select id="countCampusCandidate" resultType="int">
+        select count(*) from sys_class_schedule s
+        inner join sys_class c on c.id = s.class_id
+        where c.campus_id = #{campusId} and s.schedule_date = #{dutyDate} and s.class_type = 'CLASS'
+    </select>
+
+    <delete id="deleteByDutyDate">delete from sys_class_duty where duty_date = #{dutyDate}</delete>
+
+    <insert id="batchInsert">
+        insert into sys_class_duty
+        (class_id, campus_id, teacher_id, duty_date, duty_type, start_time, end_time,
+         remark, created_at, updated_at)
+        values
+        <foreach collection="duties" item="item" separator=",">
+            (#{item.classId}, #{item.campusId}, #{item.teacherId}, #{item.dutyDate},
+             #{item.dutyType}, #{item.startTime}, #{item.endTime}, #{item.remark}, now(), now())
+        </foreach>
+    </insert>
+</mapper>

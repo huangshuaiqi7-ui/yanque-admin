@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.courses.mapper.SysCourseDetailMapper">
+    <resultMap id="CourseDetailMap" type="cn.yanque.modules.courses.pojo.entity.SysCourseDetailEntity">
+        <id property="id" column="id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="stageName" column="stage_name"/>
+        <result property="dayNumber" column="day_number"/>
+        <result property="classContent" column="class_content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <sql id="BaseColumns">id, course_id, stage_name, day_number, class_content, created_at, updated_at</sql>
+    <select id="selectByCourseId" resultMap="CourseDetailMap">
+        select <include refid="BaseColumns"/> from sys_course_detail where course_id = #{courseId}
+        order by case when day_number is null then 0 else day_number end asc, id asc
+    </select>
+    <select id="selectById" resultMap="CourseDetailMap">
+        select <include refid="BaseColumns"/> from sys_course_detail where id = #{id}
+    </select>
+    <select id="countByCourseId" resultType="int">
+        select count(*) from sys_course_detail where course_id = #{courseId}
+    </select>
+    <select id="selectMaxDayNumber" resultType="java.lang.Integer">
+        select max(day_number) from sys_course_detail where course_id = #{courseId}
+    </select>
+    <select id="selectStageNames" resultType="java.lang.String">
+        select distinct stage_name from sys_course_detail
+        where course_id = #{courseId} and stage_name is not null and stage_name != ''
+        order by stage_name
+    </select>
+    <select id="countByCourseIdAndStageName" resultType="int">
+        select count(*) from sys_course_detail where course_id = #{courseId} and stage_name = #{stageName}
+    </select>
+    <select id="countByCourseIdAndDayNumber" resultType="int">
+        select count(*) from sys_course_detail where course_id = #{courseId} and day_number = #{dayNumber}
+    </select>
+    <update id="incrementDayNumbersFrom">
+        update sys_course_detail set day_number = day_number + 1, updated_at = now()
+        where course_id = #{courseId} and day_number >= #{dayNumber}
+    </update>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_course_detail(course_id, stage_name, day_number, class_content, created_at, updated_at)
+        values(#{courseId}, #{stageName}, #{dayNumber}, #{classContent}, now(), now())
+    </insert>
+    <insert id="batchInsert">
+        insert into sys_course_detail(course_id, stage_name, day_number, class_content, created_at, updated_at)
+        values
+        <foreach collection="details" item="detail" separator=",">
+            (#{detail.courseId}, #{detail.stageName}, #{detail.dayNumber}, #{detail.classContent}, now(), now())
+        </foreach>
+    </insert>
+    <update id="updateById">
+        update sys_course_detail set stage_name = #{stageName}, day_number = #{dayNumber},
+        class_content = #{classContent}, updated_at = now() where id = #{id}
+    </update>
+    <delete id="deleteById">delete from sys_course_detail where id = #{id}</delete>
+    <delete id="deleteByCourseId">delete from sys_course_detail where course_id = #{courseId}</delete>
+</mapper>

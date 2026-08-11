@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.studentexams.mapper.StudentExamMapper">
+  <select id="selectStudentExams" resultType="cn.yanque.modules.studentexams.pojo.vo.resvo.StudentExamRes">
+    SELECT e.id,e.paper_id,p.paper_name,e.class_id,c.class_period,p.course_id,p.stage_name,e.start_time,e.end_time,
+      e.duration_minutes,e.answer_visible,CAST(e.invigilator_user_id AS UNSIGNED) invigilator_user_id,
+      COALESCE(u.real_name,u.nickname,u.username) invigilator_name,p.total_score,
+      r.id record_id,r.status record_status,r.grading_status,r.start_time record_start_time,r.deadline_time,r.submit_time,r.score
+    FROM exam e JOIN exam_paper p ON p.id=e.paper_id JOIN sys_class c ON c.id=e.class_id
+    LEFT JOIN sys_user u ON u.id=CAST(e.invigilator_user_id AS UNSIGNED)
+    LEFT JOIN student_exam_record r ON r.exam_id=e.id AND r.student_id=#{studentId}
+    WHERE e.class_id=#{classId} ORDER BY e.start_time DESC,e.id DESC
+  </select>
+  <select id="selectRecord" resultType="cn.yanque.modules.studentexams.pojo.entity.StudentExamRecordEntity">SELECT * FROM student_exam_record WHERE id=#{id}</select>
+  <select id="selectRecordByExamStudent" resultType="cn.yanque.modules.studentexams.pojo.entity.StudentExamRecordEntity">SELECT * FROM student_exam_record WHERE exam_id=#{examId} AND student_id=#{studentId}</select>
+  <insert id="insertRecord" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO student_exam_record(exam_id,student_id,start_time,deadline_time,status,grading_status,created_at,updated_at)
+    VALUES(#{examId},#{studentId},#{startTime},#{deadlineTime},#{status},#{gradingStatus},NOW(),NOW())
+  </insert>
+  <update id="markTimeout">UPDATE student_exam_record SET status='TIMEOUT',updated_at=NOW() WHERE id=#{id} AND status='IN_PROGRESS'</update>
+  <update id="submitRecord">UPDATE student_exam_record SET submit_time=#{submitTime},status='SUBMITTED',grading_status=#{gradingStatus},score=#{score},updated_at=NOW() WHERE id=#{id} AND status='IN_PROGRESS'</update>
+  <select id="selectPaperQuestions" resultType="cn.yanque.modules.studentexams.pojo.vo.resvo.ExamPaperQuestionRow">
+    SELECT pq.id,pq.paper_id,pq.question_id,q.question_content,q.question_type,q.difficulty,q.answer_content correct_answer,
+      q.analysis_content,pq.question_score
+    FROM exam_paper_question pq JOIN exam_question q ON q.id=pq.question_id WHERE pq.paper_id=#{paperId} ORDER BY pq.id
+  </select>
+  <insert id="batchInsertAnswers">
+    INSERT INTO student_exam_answer(record_id,exam_id,paper_id,question_id,question_type,question_score,answer_content,correct,score,created_at,updated_at) VALUES
+    <foreach collection="items" item="x" separator=",">
+      (#{x.recordId},#{x.examId},#{x.paperId},#{x.questionId},#{x.questionType},#{x.questionScore},#{x.answerContent},#{x.correct},#{x.score},NOW(),NOW())
+    </foreach>
+  </insert>
+  <select id="selectExamSubmissions" resultType="cn.yanque.modules.studentexams.pojo.vo.resvo.ExamSubmissionListRes">
+    SELECT r.id record_id,e.id exam_id,s.id student_id,s.student_name,s.student_phone,
+      COALESCE(r.status,'NOT_STARTED') record_status,r.grading_status,r.score,r.start_time,r.deadline_time,r.submit_time
+    FROM exam e JOIN student s ON s.class_id=e.class_id
+    LEFT JOIN student_exam_record r ON r.exam_id=e.id AND r.student_id=s.id
+    WHERE e.id=#{examId} ORDER BY s.id
+  </select>
+  <select id="selectRecordDetail" resultType="cn.yanque.modules.studentexams.pojo.vo.resvo.ExamSubmissionDetailRes">
+    SELECT r.id record_id,r.exam_id,e.paper_id,p.paper_name,c.class_period,p.stage_name,r.student_id,s.student_name,s.student_phone,
+      p.total_score,r.score,r.status record_status,r.grading_status,e.answer_visible,r.start_time,r.deadline_time,r.submit_time
+    FROM student_exam_record r JOIN exam e ON e.id=r.exam_id JOIN exam_paper p ON p.id=e.paper_id
+    JOIN sys_class c ON c.id=e.class_id JOIN student s ON s.id=r.student_id WHERE r.id=#{recordId}
+  </select>
+  <select id="selectSubmissionQuestions" resultType="cn.yanque.modules.studentexams.pojo.vo.resvo.ExamSubmissionDetailRes$Question">
+    SELECT pq.id,a.id answer_id,pq.question_id,q.question_content,q.question_type,pq.question_score,a.answer_content,
+      q.answer_content correct_answer,q.analysis_content,a.correct,a.score
+    FROM student_exam_record r JOIN exam e ON e.id=r.exam_id JOIN exam_paper_question pq ON pq.paper_id=e.paper_id
+    JOIN exam_question q ON q.id=pq.question_id
+    LEFT JOIN student_exam_answer a ON a.record_id=r.id AND a.question_id=pq.question_id
+    WHERE r.id=#{recordId} ORDER BY pq.id
+  </select>
+  <select id="selectAnswerById" resultType="cn.yanque.modules.studentexams.pojo.entity.StudentExamAnswerEntity">SELECT * FROM student_exam_answer WHERE id=#{id}</select>
+  <update id="updateAnswerScore">UPDATE student_exam_answer SET score=#{score},correct=NULL,updated_at=NOW() WHERE id=#{id}</update>
+  <select id="countUnscoredAnswers" resultType="int">SELECT COUNT(*) FROM student_exam_answer WHERE record_id=#{recordId} AND score IS NULL</select>
+  <select id="sumAnswerScores" resultType="java.math.BigDecimal">SELECT COALESCE(SUM(score),0) FROM student_exam_answer WHERE record_id=#{recordId}</select>
+  <update id="updateRecordGrade">UPDATE student_exam_record SET grading_status=#{gradingStatus},score=#{score},updated_at=NOW() WHERE id=#{id}</update>
+  <update id="markExpiredRecordsByExam">
+    UPDATE student_exam_record SET status='TIMEOUT',updated_at=NOW()
+    WHERE exam_id=#{examId} AND status='IN_PROGRESS' AND deadline_time&lt;=#{now}
+  </update>
+</mapper>

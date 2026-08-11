@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.campuses.mapper.SysCampusMapper">
+    <resultMap id="CampusMap" type="cn.yanque.modules.campuses.pojo.entity.SysCampusEntity">
+        <id property="id" column="id"/>
+        <result property="campusLocation" column="campus_location"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="managerPhone" column="manager_phone"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="BaseColumns">id, campus_location, manager_name, manager_phone, created_at, updated_at</sql>
+
+    <select id="selectPage" resultMap="CampusMap">
+        select <include refid="BaseColumns"/> from sys_campus
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (campus_location like concat('%', #{keyword}, '%')
+                or manager_name like concat('%', #{keyword}, '%')
+                or manager_phone like concat('%', #{keyword}, '%'))
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectById" resultMap="CampusMap">
+        select <include refid="BaseColumns"/> from sys_campus where id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_campus(campus_location, manager_name, manager_phone, created_at, updated_at)
+        values(#{campusLocation}, #{managerName}, #{managerPhone}, now(), now())
+    </insert>
+
+    <update id="updateById">
+        update sys_campus set campus_location = #{campusLocation}, manager_name = #{managerName},
+        manager_phone = #{managerPhone}, updated_at = now() where id = #{id}
+    </update>
+
+    <delete id="deleteById">delete from sys_campus where id = #{id}</delete>
+</mapper>

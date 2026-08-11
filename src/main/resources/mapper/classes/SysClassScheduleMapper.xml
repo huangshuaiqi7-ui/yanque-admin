@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.classes.mapper.SysClassScheduleMapper">
+    <resultMap id="ScheduleResMap" type="cn.yanque.modules.classes.pojo.vo.resvo.ClassScheduleRes">
+        <id property="id" column="id"/>
+        <result property="classId" column="class_id"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="scheduleDate" column="schedule_date"/>
+        <result property="courseDetailId" column="course_detail_id"/>
+        <result property="courseContent" column="course_content"/>
+        <result property="classType" column="class_type"/>
+    </resultMap>
+
+    <select id="selectConfigValue" resultType="java.lang.String">
+        select v from sys_config where k = #{key} limit 1
+    </select>
+
+    <select id="selectByClassId" resultMap="ScheduleResMap">
+        select id, class_id, teacher_id, schedule_date, course_detail_id, course_content, class_type
+        from sys_class_schedule
+        where class_id = #{classId}
+        <if test="startDate != null and endDate != null">
+            and schedule_date between #{startDate} and #{endDate}
+        </if>
+        order by schedule_date
+    </select>
+
+    <select id="selectDateDetail"
+            resultType="cn.yanque.modules.classes.pojo.vo.resvo.ClassScheduleDateDetailRes">
+        select s.id, s.class_id as classId, c.class_period as classPeriod,
+               s.teacher_id as teacherId,
+               coalesce(nullif(u.real_name, ''), nullif(u.nickname, ''), u.username) as teacherName,
+               s.schedule_date as scheduleDate, s.course_detail_id as courseDetailId,
+               d.stage_name as stageName, d.day_number as dayNumber,
+               s.course_content as courseContent, s.class_type as classType
+        from sys_class_schedule s
+        inner join sys_class c on c.id = s.class_id
+        left join sys_course_detail d on d.id = s.course_detail_id
+        left join sys_user u on u.id = s.teacher_id
+        where s.class_id = #{classId} and s.schedule_date = #{scheduleDate}
+    </select>
+
+    <delete id="deleteByClassId">delete from sys_class_schedule where class_id = #{classId}</delete>
+
+    <insert id="batchInsert">
+        insert into sys_class_schedule
+        (class_id, teacher_id, schedule_date, course_detail_id, course_content, class_type, created_at, updated_at)
+        values
+        <foreach collection="schedules" item="item" separator=",">
+            (#{item.classId}, #{item.teacherId}, #{item.scheduleDate}, #{item.courseDetailId},
+             #{item.courseContent}, #{item.classType}, now(), now())
+        </foreach>
+    </insert>
+
+    <select id="selectStageRanges"
+            resultType="cn.yanque.modules.classes.pojo.vo.resvo.ClassStageRangeRes">
+        select d.stage_name as stageName, count(*) as stageNumber,
+               min(s.schedule_date) as startDate, max(s.schedule_date) as endDate
+        from sys_class_schedule s
+        inner join sys_course_detail d on d.id = s.course_detail_id
+        where s.class_id = #{classId} and s.class_type = 'CLASS'
+        group by d.stage_name
+        order by min(s.schedule_date), min(d.day_number), min(d.id)
+    </select>
+
+    <select id="selectActiveTeachers"
+            resultType="cn.yanque.modules.classes.pojo.vo.resvo.TeacherOptionRes">
+        select distinct u.id,
+               coalesce(nullif(u.real_name, ''), nullif(u.nickname, ''), u.username) as teacherName
+        from sys_user u
+        inner join sys_user_role ur on ur.user_id = u.id
+        inner join sys_role r on r.id = ur.role_id
+        where u.status = 'ACTIVE' and r.status = 'ACTIVE' and r.role_code = 'TEACHER'
+        order by u.id
+    </select>
+
+    <select id="selectBusyTeacherIds" resultType="java.lang.Long">
+        select distinct teacher_id
+        from sys_class_schedule
+        where class_id != #{classId} and teacher_id is not null and class_type = 'CLASS'
+          and schedule_date between #{startDate} and #{endDate}
+    </select>
+
+    <select id="countValidTeacher" resultType="int">
+        select count(distinct u.id)
+        from sys_user u
+        inner join sys_user_role ur on ur.user_id = u.id
+        inner join sys_role r on r.id = ur.role_id
+        where u.id = #{teacherId} and u.status = 'ACTIVE'
+          and r.status = 'ACTIVE' and r.role_code = 'TEACHER'
+    </select>
+
+    <select id="countTeacherConflict" resultType="int">
+        select count(*)
+        from sys_class_schedule
+        where class_id != #{classId} and teacher_id = #{teacherId} and class_type = 'CLASS'
+          and schedule_date between #{startDate} and #{endDate}
+    </select>
+
+    <update id="updateTeacherByStage">
+        update sys_class_schedule s
+        inner join sys_course_detail d on d.id = s.course_detail_id
+        set s.teacher_id = #{teacherId}, s.updated_at = now()
+        where s.class_id = #{classId} and s.class_type = 'CLASS' and d.stage_name = #{stageName}
+    </update>
+
+    <select id="selectByClassIdAndDate"
+            resultType="cn.yanque.modules.classes.pojo.entity.SysClassScheduleEntity">
+        select id, class_id as classId, teacher_id as teacherId, schedule_date as scheduleDate,
+               course_detail_id as courseDetailId, course_content as courseContent,
+               class_type as classType, created_at as createdAt, updated_at as updatedAt
+        from sys_class_schedule
+        where class_id = #{classId} and schedule_date = #{scheduleDate}
+    </select>
+
+    <insert id="insertOne" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_class_schedule
+        (class_id, teacher_id, schedule_date, course_detail_id, course_content, class_type,
+         created_at, updated_at)
+        values
+        (#{classId}, #{teacherId}, #{scheduleDate}, #{courseDetailId}, #{courseContent},
+         #{classType}, now(), now())
+    </insert>
+
+    <select id="selectClassSchedulesFromDate"
+            resultType="cn.yanque.modules.classes.pojo.entity.SysClassScheduleEntity">
+        select id, class_id as classId, teacher_id as teacherId, schedule_date as scheduleDate,
+               course_detail_id as courseDetailId, course_content as courseContent,
+               class_type as classType, created_at as createdAt, updated_at as updatedAt
+        from sys_class_schedule
+        where class_id = #{classId} and schedule_date &gt;= #{fromDate} and class_type = 'CLASS'
+        order by schedule_date, id
+    </select>
+
+    <delete id="deleteSchedulesFromDate">
+        delete from sys_class_schedule where class_id = #{classId} and schedule_date &gt;= #{fromDate}
+    </delete>
+
+    <select id="selectTeacherSchedules"
+            resultType="cn.yanque.modules.classes.pojo.vo.resvo.TeacherScheduleRowRes">
+        select s.teacher_id as teacherId,
+               coalesce(nullif(u.real_name, ''), nullif(u.nickname, ''), u.username) as teacherName,
+               s.schedule_date as scheduleDate, s.class_id as classId, c.class_period as classPeriod
+        from sys_class_schedule s
+        inner join sys_user u on u.id = s.teacher_id
+        inner join sys_class c on c.id = s.class_id
+        where s.teacher_id is not null and s.class_type = 'CLASS'
+          and s.schedule_date between #{startDate} and #{endDate}
+        order by s.teacher_id, s.schedule_date, s.class_id
+    </select>
+</mapper>

@@ -1,0 +1,15 @@
+
+# 如果我们要连接的是本地的Redis 那么不需要做配置 默认就是本地的
+spring:
+  data:
+    redis:
+      host: localhost # 连接Redis的服务地址
+      port: 6379 # 连接Redis的服务端口
+  #      password:  # 认证密码
+
+  # MySQL的配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/yanque-13?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.exams.mapper.ExamMapper">
+  <sql id="JoinedColumns">e.*,p.paper_name,c.class_period,COALESCE(u.real_name,u.nickname,u.username) invigilator_name</sql>
+  <select id="selectPage" resultType="cn.yanque.modules.exams.pojo.vo.resvo.ExamRes">
+    SELECT <include refid="JoinedColumns"/> FROM exam e
+    JOIN exam_paper p ON p.id=e.paper_id JOIN sys_class c ON c.id=e.class_id JOIN sys_user u ON u.id=CAST(e.invigilator_user_id AS UNSIGNED)
+    <where>
+      <if test="paperId != null">AND e.paper_id=#{paperId}</if>
+      <if test="classId != null">AND e.class_id=#{classId}</if>
+      <if test="invigilatorUserId != null">AND e.invigilator_user_id=#{invigilatorUserId}</if>
+    </where> ORDER BY e.start_time DESC,e.id DESC
+  </select>
+  <select id="selectById" resultType="cn.yanque.modules.exams.pojo.entity.ExamEntity">SELECT * FROM exam WHERE id=#{id}</select>
+  <select id="selectDetail" resultType="cn.yanque.modules.exams.pojo.vo.resvo.ExamRes">
+    SELECT <include refid="JoinedColumns"/> FROM exam e
+    JOIN exam_paper p ON p.id=e.paper_id JOIN sys_class c ON c.id=e.class_id JOIN sys_user u ON u.id=CAST(e.invigilator_user_id AS UNSIGNED) WHERE e.id=#{id}
+  </select>
+  <select id="countClassTimeConflict" resultType="int">
+    SELECT COUNT(*) FROM exam WHERE class_id=#{classId} AND start_time&lt;#{endTime} AND end_time&gt;#{startTime}
+    <if test="excludeId != null">AND id&lt;&gt;#{excludeId}</if>
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO exam(paper_id,class_id,start_time,end_time,duration_minutes,invigilator_user_id,answer_visible,created_at,updated_at)
+    VALUES(#{paperId},#{classId},#{startTime},#{endTime},#{durationMinutes},#{invigilatorUserId},0,NOW(),NOW())
+  </insert>
+  <update id="updateById">UPDATE exam SET paper_id=#{paperId},class_id=#{classId},start_time=#{startTime},end_time=#{endTime},duration_minutes=#{durationMinutes},invigilator_user_id=#{invigilatorUserId},updated_at=NOW() WHERE id=#{id}</update>
+  <update id="updateAnswerVisible">UPDATE exam SET answer_visible=#{answerVisible},updated_at=NOW() WHERE id=#{id}</update>
+  <delete id="deleteById">DELETE FROM exam WHERE id=#{id}</delete>
+</mapper>

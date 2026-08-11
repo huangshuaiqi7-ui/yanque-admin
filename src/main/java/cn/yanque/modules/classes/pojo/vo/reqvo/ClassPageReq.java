@@ -1,0 +1,18 @@
+package cn.yanque.modules.classes.pojo.vo.reqvo;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.Data;
+
+@Data
+public class ClassPageReq {
+    @Min(value = 1, message = "页码不能小于1")
+    private Integer pageNum = 1;
+    @Min(value = 1, message = "每页条数不能小于1")
+    @Max(value = 1000, message = "每页条数不能超过1000")
+    private Integer pageSize = 10;
+    private String keyword;
+    private Long headTeacherId;
+    private Long campusId;
+    private Long courseId;
+}

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!--
+        从 Spring 环境配置中读取应用名称。
+        source 对应 application.yml / application.properties 中的 spring.application.name。
+        如果未配置，则默认使用 yanque-admin。
+        注意：使用 springProperty 和 springProfile 时，文件通常应命名为 logback-spring.xml。
+    -->
+    <springProperty
+            scope="context"
+            name="APP_NAME"
+            source="spring.application.name"
+            defaultValue="yanque-admin"/>
+
+    <!--
+        日志文件保存目录。
+        优先读取系统属性或环境变量 LOG_PATH。
+        如果未配置，则默认保存到 /data/yanque-admin/logs。
+    -->
+    <property
+            name="LOG_PATH"
+            value="${LOG_PATH:-C:\aproject\yanque13\YanQue-Admin\src\main\resources\logs}"/>
+
+    <!--
+        控制台日志输出格式。
+
+        %d：日志时间
+        %thread：当前线程名称
+        %-5level：日志级别，固定占 5 个字符并左对齐
+        %logger{50}：日志记录器名称，最大长度为 50
+        %X{guid}：从 MDC 中获取当前请求的 guid
+        %msg：日志正文
+        %n：换行
+        %ex{full}：完整输出异常堆栈
+    -->
+    <property
+            name="CONSOLE_PATTERN"
+            value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} [guid=%X{guid}] - %msg%n%ex{full}"/>
+
+    <!--
+        文件日志输出格式。
+        当前格式与控制台日志格式保持一致。
+    -->
+    <property
+            name="FILE_PATTERN"
+            value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} [guid=%X{guid}] - %msg%n%ex{full}"/>
+
+    <!--
+        控制台日志输出器。
+        日志会输出到应用启动终端或容器标准输出。
+
+        我们可以同时把日志输出到控制台 日志文件 Elasticsearch 这些地方
+    -->
+    <appender
+            name="CONSOLE"
+            class="ch.qos.logback.core.ConsoleAppender">
+
+        <!-- 配置控制台日志编码和输出格式 -->
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--
+        我们可以针对不同的框架 配置不同的日志级别
+        也可以通过 ROOT 配置默认的日志级别
+
+        将 HikariCP 数据库连接池日志级别设置为 WARN。
+        避免输出大量连接池初始化、连接获取等 INFO 或 DEBUG 日志。
+    -->
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+
+    <!--
+        将 Spring MVC DispatcherServlet 的日志级别设置为 WARN。
+        减少请求分发过程中的普通日志输出。
+    -->
+    <logger
+            name="org.springframework.web.servlet.DispatcherServlet"
+            level="WARN"/>
+
+    <!--
+        将 Apache HttpClient 相关日志级别设置为 WARN。
+        避免输出大量 HTTP 请求、连接池及请求执行过程日志。
+    -->
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="org.apache.http.impl.conn" level="WARN"/>
+    <logger name="org.apache.http.impl.execchain" level="WARN"/>
+
+    <!--
+        生产环境日志配置。
+        当 Spring 激活的 Profile 中包含 prod 时生效。
+
+        同一个日志配置文件中 可以有多个 springProfile 配置。
+
+        <springProfile name="dev">  在开发环节 我们可以把日志输入到本地的日志文件中
+        <springProfile name="prod"> 在生产环节 我们可以把日志输入到远程的日志服务器中
+
+    -->
+    <springProfile name="prod">
+
+        <!--
+            生产环境文件日志输出器。
+            使用 RollingFileAppender 支持日志文件滚动切分。
+        -->
+        <appender
+                name="APP_FILE"
+                class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+            <!--
+                当前正在写入的日志文件。
+                例如：
+                /data/yanque-admin/logs/yanque-admin.log
+            -->
+            <file>${LOG_PATH}/${APP_NAME}.log</file>
+
+            <!--
+                应用重启时追加日志内容，不覆盖已有日志文件。
+            -->
+            <append>true</append>
+
+            <!-- 配置文件日志编码和输出格式 -->
+            <encoder>
+                <pattern>${FILE_PATTERN}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+
+            <!--
+                按日期和文件大小滚动日志。
+
+                当日期变化，或者当前日志文件达到 maxFileSize 时，
+                当前日志文件会被归档并压缩。
+
+                日志文件是追加式的，日志文件会不断增大，需要定期清理。
+                近期的日志是需要保留的 但是 远期的日志可以删除
+            -->
+            <rollingPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+
+                <!--
+                    归档日志文件名称格式。
+
+                    %d{yyyy-MM-dd}：按日期归档
+                    %i：同一天内按文件序号区分
+                    .gz：归档后使用 gzip 压缩
+
+                    示例：
+                    yanque-admin.2026-07-03.0.log.gz
+                    yanque-admin.2026-07-03.1.log.gz
+                -->
+                <fileNamePattern>
+                    ${LOG_PATH}/archive/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz
+                </fileNamePattern>
+
+                <!--
+                    单个日志文件最大为 100MB。
+                    超过该大小后，会生成新的序号文件。
+                -->
+                <maxFileSize>100MB</maxFileSize>
+
+                <!--
+                    最多保留最近 30 天的归档日志。
+                    超过保留天数的日志会被自动删除。
+                -->
+                <maxHistory>30</maxHistory>
+
+                <!--
+                    所有归档日志文件总大小最多为 10GB。
+                    超过限制后，会优先删除较早的日志文件。
+                -->
+                <totalSizeCap>10GB</totalSizeCap>
+
+                <!--
+                    应用启动时立即执行一次历史日志清理。
+                -->
+                <cleanHistoryOnStart>true</cleanHistoryOnStart>
+            </rollingPolicy>
+        </appender>
+
+        <!--
+            生产环境根日志配置。
+
+            根日志级别为 INFO。
+            日志同时输出到控制台和日志文件。
+        -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="APP_FILE"/>
+        </root>
+    </springProfile>
+
+    <!--
+        非生产环境日志配置。
+        当当前激活的 Spring Profile 不包含 prod 时生效。
+
+        非生产环境只输出控制台日志，不生成日志文件。
+    -->
+    <springProfile name="!prod">
+
+        <!--
+            非生产环境根日志级别为 INFO。
+            日志仅输出到控制台。
+        -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+
+        <!--
+            日志格式配置。
+        -->
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </springProfile>
+
+</configuration>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.homeworks.mapper.HomeworkMapper">
+  <select id="selectPage" resultType="cn.yanque.modules.homeworks.pojo.vo.resvo.HomeworkRes">
+    SELECT h.*, c.class_period FROM homework h JOIN sys_class c ON c.id=h.class_id
+    <where>
+      <if test="title != null and title != ''">AND h.title LIKE CONCAT('%',#{title},'%')</if>
+      <if test="classId != null">AND h.class_id=#{classId}</if>
+      <if test="homeworkDate != null">AND h.homework_date=#{homeworkDate}</if>
+    </where> ORDER BY h.homework_date DESC,h.id DESC
+  </select>
+  <select id="selectById" resultType="cn.yanque.modules.homeworks.pojo.entity.HomeworkEntity">SELECT * FROM homework WHERE id=#{id}</select>
+  <select id="countByClassAndDate" resultType="int">SELECT COUNT(*) FROM homework WHERE class_id=#{classId} AND homework_date=#{homeworkDate}</select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO homework(title,content_object_key,content_file_name,answer_student_visible,class_id,homework_date,class_content,start_time,deadline,remark)
+    VALUES(#{title},#{contentObjectKey},#{contentFileName},0,#{classId},#{homeworkDate},#{classContent},#{startTime},#{deadline},#{remark})
+  </insert>
+  <update id="updateAnswer">UPDATE homework SET answer_object_key=#{answerObjectKey},answer_file_name=#{answerFileName},answer_student_visible=#{answerStudentVisible} WHERE id=#{id}</update>
+  <select id="selectSubmissions" resultType="cn.yanque.modules.homeworks.pojo.vo.resvo.HomeworkSubmissionRes">
+    SELECT hs.*,s.student_name,s.student_phone FROM homework_submission hs JOIN student s ON s.id=hs.student_id WHERE hs.homework_id=#{homeworkId} ORDER BY hs.submit_time DESC
+  </select>
+  <select id="selectSubmissionById" resultType="cn.yanque.modules.homeworks.pojo.entity.HomeworkSubmissionEntity">SELECT * FROM homework_submission WHERE id=#{id}</select>
+  <select id="selectSubmission" resultType="cn.yanque.modules.homeworks.pojo.entity.HomeworkSubmissionEntity">SELECT * FROM homework_submission WHERE homework_id=#{homeworkId} AND student_id=#{studentId}</select>
+  <insert id="insertSubmission" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO homework_submission(homework_id,student_id,class_id,content_object_key,content_file_name,submit_time,late_submitted)
+    VALUES(#{homeworkId},#{studentId},#{classId},#{contentObjectKey},#{contentFileName},#{submitTime},#{lateSubmitted})
+  </insert>
+  <update id="updateSubmissionFile">UPDATE homework_submission SET content_object_key=#{contentObjectKey},content_file_name=#{contentFileName},submit_time=#{submitTime},late_submitted=#{lateSubmitted} WHERE id=#{id}</update>
+  <update id="gradeSubmission">UPDATE homework_submission SET score=#{score},teacher_remark=#{teacherRemark} WHERE id=#{id}</update>
+  <select id="selectStudentHomeworks" resultType="cn.yanque.modules.homeworks.pojo.vo.resvo.StudentHomeworkRes">
+    SELECT h.id,h.title,h.homework_date,h.class_content,h.deadline,h.content_file_name,h.content_object_key,
+      h.answer_student_visible AS answer_visible,
+      CASE WHEN h.answer_student_visible=1 THEN h.answer_file_name END answer_file_name,
+      CASE WHEN h.answer_student_visible=1 THEN h.answer_object_key END answer_object_key,
+      CASE WHEN hs.id IS NULL THEN 0 ELSE 1 END submitted,hs.content_file_name submission_file_name,
+      hs.submit_time,hs.late_submitted,hs.score,hs.teacher_remark
+    FROM homework h LEFT JOIN homework_submission hs ON hs.homework_id=h.id AND hs.student_id=#{studentId}
+    WHERE h.class_id=#{classId} AND h.start_time&lt;=#{now} ORDER BY h.homework_date DESC,h.id DESC
+  </select>
+</mapper>

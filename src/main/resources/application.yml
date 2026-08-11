@@ -1,0 +1,26 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /yq-admin  # 上下文环境.
+
+#激活开发环境:
+spring:
+    profiles:
+        active: dev
+
+
+
+# mybatis 的配置
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl # 日志管理组件使用的是 Slf4j
+    map-underscore-to-camel-case: true # 开启驼峰命名转换. user_name -> userName
+  mapper-locations: classpath*:/mapper/**/*.xml # xml 包扫描
+
+#日志记录:
+logging:
+  level:
+    cn.yanque: info # 当前包下面的日志级别配置 # 没有指定的包 默认使用的是 info 级别
+    root: info # 全局日志级别配置
+
+

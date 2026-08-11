@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.permissions.mapper.SysPermissionMapper">
+    <resultMap id="PermissionMap" type="cn.yanque.modules.permissions.pojo.entity.SysPermissionEntity">
+        <id property="id" column="id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="permissionCode" column="permission_code"/>
+        <result property="permissionName" column="permission_name"/>
+        <result property="permissionType" column="permission_type"/>
+        <result property="apiPath" column="api_path"/>
+        <result property="sortNum" column="sort_num"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <sql id="BaseColumns">
+        id, parent_id, permission_code, permission_name, permission_type, api_path,
+        sort_num, description, status, created_at, updated_at
+    </sql>
+    <select id="selectPage" resultMap="PermissionMap">
+        select <include refid="BaseColumns"/> from sys_permission
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (permission_code like concat('%', #{keyword}, '%')
+                or permission_name like concat('%', #{keyword}, '%')
+                or api_path like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="parentId != null">and parent_id = #{parentId}</if>
+            <if test="permissionCode != null and permissionCode != ''">and permission_code like concat('%', #{permissionCode}, '%')</if>
+            <if test="permissionName != null and permissionName != ''">and permission_name like concat('%', #{permissionName}, '%')</if>
+            <if test="permissionType != null and permissionType != ''">and permission_type = #{permissionType}</if>
+            <if test="status != null and status != ''">and status = #{status}</if>
+        </where>
+        order by sort_num asc, id asc
+    </select>
+    <select id="selectAll" resultMap="PermissionMap">
+        select <include refid="BaseColumns"/> from sys_permission order by sort_num asc, id asc
+    </select>
+    <select id="selectById" resultMap="PermissionMap">select <include refid="BaseColumns"/> from sys_permission where id = #{id}</select>
+    <select id="selectByCode" resultMap="PermissionMap">select <include refid="BaseColumns"/> from sys_permission where permission_code = #{permissionCode}</select>
+    <select id="countByParentId" resultType="int">select count(*) from sys_permission where parent_id = #{parentId}</select>
+    <select id="countByIds" resultType="int">
+        select count(*) from sys_permission where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_permission(parent_id, permission_code, permission_name, permission_type,
+        api_path, sort_num, description, status, created_at, updated_at)
+        values(#{parentId}, #{permissionCode}, #{permissionName}, #{permissionType},
+        #{apiPath}, #{sortNum}, #{description}, #{status}, now(), now())
+    </insert>
+    <update id="updateById">
+        update sys_permission set parent_id = #{parentId}, permission_code = #{permissionCode},
+        permission_name = #{permissionName}, permission_type = #{permissionType}, api_path = #{apiPath},
+        sort_num = #{sortNum}, description = #{description}, status = #{status}, updated_at = now()
+        where id = #{id}
+    </update>
+    <delete id="deleteById">delete from sys_permission where id = #{id}</delete>
+    <delete id="deleteRolePermissionsByPermissionId">
+        delete from sys_role_permission where permission_id = #{permissionId}
+    </delete>
+    <select id="selectPermissionCodesByUserId" resultType="java.lang.String">
+        select distinct p.permission_code from sys_permission p
+        inner join sys_role_permission rp on rp.permission_id = p.id
+        inner join sys_role r on r.id = rp.role_id and r.status = 'ACTIVE'
+        inner join sys_user_role ur on ur.role_id = r.id
+        where ur.user_id = #{userId} and p.status = 'ACTIVE'
+    </select>
+    <select id="selectUserIdsByPermissionId" resultType="java.lang.Long">
+        select distinct ur.user_id from sys_user_role ur
+        inner join sys_role_permission rp on rp.role_id = ur.role_id
+        where rp.permission_id = #{permissionId}
+    </select>
+</mapper>

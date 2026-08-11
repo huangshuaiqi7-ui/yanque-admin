@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.examquestions.mapper.ExamQuestionMapper">
+  <select id="selectPage" resultType="cn.yanque.modules.examquestions.pojo.vo.resvo.ExamQuestionRes">
+    SELECT q.*, GROUP_CONCAT(DISTINCT c.course_name ORDER BY c.id SEPARATOR '、') course_names,
+      GROUP_CONCAT(DISTINCT CONCAT(c.course_name,' / ',qc.stage_name) ORDER BY c.id SEPARATOR '、') course_stage_names
+    FROM exam_question q
+    LEFT JOIN exam_question_course qc ON qc.question_id=q.id
+    LEFT JOIN sys_course c ON c.id=qc.course_id
+    <where>
+      <if test="questionType != null and questionType != ''">AND q.question_type=#{questionType}</if>
+      <if test="courseId != null">AND EXISTS(SELECT 1 FROM exam_question_course x WHERE x.question_id=q.id AND x.course_id=#{courseId})</if>
+      <if test="stageName != null and stageName != ''">AND EXISTS(SELECT 1 FROM exam_question_course x WHERE x.question_id=q.id AND x.course_id=#{courseId} AND x.stage_name=#{stageName})</if>
+      <if test="difficulty != null and difficulty != ''">AND q.difficulty=#{difficulty}</if>
+      <if test="status != null and status != ''">AND q.status=#{status}</if>
+      <if test="keyword != null and keyword != ''">AND (q.question_content LIKE CONCAT('%',#{keyword},'%') OR q.answer_content LIKE CONCAT('%',#{keyword},'%') OR q.analysis_content LIKE CONCAT('%',#{keyword},'%'))</if>
+    </where>
+    GROUP BY q.id ORDER BY q.id DESC
+  </select>
+  <select id="selectById" resultType="cn.yanque.modules.examquestions.pojo.entity.ExamQuestionEntity">SELECT * FROM exam_question WHERE id=#{id}</select>
+  <select id="selectOptions" resultType="cn.yanque.modules.examquestions.pojo.vo.resvo.ExamQuestionRes$OptionRes">
+    SELECT id,question_id,option_key,option_content FROM exam_question_option WHERE question_id=#{questionId} ORDER BY sort_order,id
+  </select>
+  <select id="selectCourseStages" resultType="cn.yanque.modules.examquestions.pojo.vo.resvo.ExamQuestionCourseStageRes">
+    SELECT qc.course_id,c.course_name,qc.stage_name FROM exam_question_course qc JOIN sys_course c ON c.id=qc.course_id WHERE qc.question_id=#{questionId} ORDER BY qc.course_id
+  </select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO exam_question(question_type,question_content,answer_content,analysis_content,difficulty,status,created_at,updated_at)
+    VALUES(#{questionType},#{questionContent},#{answerContent},#{analysisContent},#{difficulty},#{status},NOW(),NOW())
+  </insert>
+  <update id="updateById">UPDATE exam_question SET question_type=#{questionType},question_content=#{questionContent},answer_content=#{answerContent},analysis_content=#{analysisContent},difficulty=#{difficulty},status=#{status},updated_at=NOW() WHERE id=#{id}</update>
+  <update id="updateStatus">UPDATE exam_question SET status=#{status},updated_at=NOW() WHERE id=#{id}</update>
+  <delete id="deleteById">DELETE FROM exam_question WHERE id=#{id}</delete>
+  <delete id="deleteOptions">DELETE FROM exam_question_option WHERE question_id=#{questionId}</delete>
+  <delete id="deleteCourseStages">DELETE FROM exam_question_course WHERE question_id=#{questionId}</delete>
+  <insert id="batchInsertOptions">
+    INSERT INTO exam_question_option(question_id,option_key,option_content,sort_order,created_at,updated_at) VALUES
+    <foreach collection="items" item="x" separator=",">(#{x.questionId},#{x.optionKey},#{x.optionContent},#{x.sortOrder},NOW(),NOW())</foreach>
+  </insert>
+  <insert id="batchInsertCourseStages">
+    INSERT INTO exam_question_course(question_id,course_id,stage_name,created_at) VALUES
+    <foreach collection="items" item="x" separator=",">(#{questionId},#{x.courseId},#{x.stageName},NOW())</foreach>
+  </insert>
+  <select id="countQuestionScope" resultType="int">
+    SELECT COUNT(*) FROM exam_question_course
+    WHERE question_id=#{questionId} AND course_id=#{courseId}
+    <if test="stageName != null and stageName != ''">AND stage_name=#{stageName}</if>
+  </select>
+</mapper>

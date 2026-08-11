@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.classes.mapper.SysClassMapper">
+    <resultMap id="ClassMap" type="cn.yanque.modules.classes.pojo.entity.SysClassEntity">
+        <id property="id" column="id"/>
+        <result property="classPeriod" column="class_period"/>
+        <result property="headTeacherId" column="head_teacher_id"/>
+        <result property="campusId" column="campus_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <resultMap id="ClassResMap" type="cn.yanque.modules.classes.pojo.vo.resvo.ClassRes">
+        <id property="id" column="id"/>
+        <result property="classPeriod" column="class_period"/>
+        <result property="headTeacherId" column="head_teacher_id"/>
+        <result property="headTeacherName" column="head_teacher_name"/>
+        <result property="campusId" column="campus_id"/>
+        <result property="campusName" column="campus_name"/>
+        <result property="courseId" column="course_id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <sql id="JoinedColumns">
+        c.id, c.class_period, c.head_teacher_id,
+        coalesce(nullif(u.real_name, ''), nullif(u.nickname, ''), u.username) as head_teacher_name,
+        c.campus_id, ca.campus_location as campus_name,
+        c.course_id, cr.course_name, c.created_at, c.updated_at
+    </sql>
+    <select id="selectPage" resultMap="ClassResMap">
+        select <include refid="JoinedColumns"/> from sys_class c
+        inner join sys_user u on u.id = c.head_teacher_id
+        inner join sys_campus ca on ca.id = c.campus_id
+        inner join sys_course cr on cr.id = c.course_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (c.class_period like concat('%', #{keyword}, '%')
+                or u.username like concat('%', #{keyword}, '%')
+                or u.nickname like concat('%', #{keyword}, '%')
+                or u.real_name like concat('%', #{keyword}, '%')
+                or ca.campus_location like concat('%', #{keyword}, '%')
+                or cr.course_name like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="headTeacherId != null">and c.head_teacher_id = #{headTeacherId}</if>
+            <if test="campusId != null">and c.campus_id = #{campusId}</if>
+            <if test="courseId != null">and c.course_id = #{courseId}</if>
+        </where>
+        order by c.id desc
+    </select>
+    <select id="selectDetailById" resultMap="ClassResMap">
+        select <include refid="JoinedColumns"/> from sys_class c
+        inner join sys_user u on u.id = c.head_teacher_id
+        inner join sys_campus ca on ca.id = c.campus_id
+        inner join sys_course cr on cr.id = c.course_id
+        where c.id = #{id}
+    </select>
+    <select id="selectById" resultMap="ClassMap">
+        select id, class_period, head_teacher_id, campus_id, course_id, created_at, updated_at
+        from sys_class where id = #{id}
+    </select>
+    <select id="countByClassPeriod" resultType="int">
+        select count(*) from sys_class where class_period = #{classPeriod}
+        <if test="excludeId != null">and id != #{excludeId}</if>
+    </select>
+    <select id="countValidHeadTeacher" resultType="int">
+        select count(distinct u.id) from sys_user u
+        inner join sys_user_role ur on ur.user_id = u.id
+        inner join sys_role r on r.id = ur.role_id
+        where u.id = #{userId} and u.status = 'ACTIVE'
+          and r.role_code = 'HEAD_TEACHER' and r.status = 'ACTIVE'
+    </select>
+    <select id="countCampus" resultType="int">select count(*) from sys_campus where id = #{campusId}</select>
+    <select id="countCourse" resultType="int">select count(*) from sys_course where id = #{courseId}</select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_class(class_period, head_teacher_id, campus_id, course_id, created_at, updated_at)
+        values(#{classPeriod}, #{headTeacherId}, #{campusId}, #{courseId}, now(), now())
+    </insert>
+    <update id="updateById">
+        update sys_class set class_period = #{classPeriod}, head_teacher_id = #{headTeacherId},
+        campus_id = #{campusId}, course_id = #{courseId}, updated_at = now() where id = #{id}
+    </update>
+    <delete id="deleteById">delete from sys_class where id = #{id}</delete>
+</mapper>

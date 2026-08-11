@@ -1,0 +1,31 @@
+
+# 如果我们要连接的是本地的Redis 那么不需要做配置 默认就是本地的
+spring:
+  data:
+    redis:
+      host: redis-shzl6tz4l7lst4rga.redis.volces.com
+      port: 6379
+      password: QWer1234!!!   # 没密码可不写
+      database: 4
+
+
+  # MySQL的配置
+  datasource:
+    url: jdbc:mysql://mysql-02a756b9c0e4-public.rds.volces.com:3306/yanque-14?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: QWer1234!!!
+
+tos:
+  endpoint: ${YQ_TOS_ENDPOINT:tos-cn-shanghai.volces.com}
+  region: ${YQ_TOS_REGION:cn-shanghai}
+  bucket: ${YQ_TOS_BUCKET:yanque-test}
+  access-key: ${YQ_TOS_ACCESS_KEY:AKLTNWFiODdhODI5NWNkNDgzN2E2OTgzNzU5YmM5OTlmMzU}
+  secret-key: ${YQ_TOS_SECRET_KEY:WWpKa1l6STNOekkzWWpGa05EZ3pZV0ZsTURrek1qVXdObU0xTkRReU5HTQ==}
+  upload-url-expire-seconds: ${YQ_TOS_UPLOAD_URL_EXPIRE_SECONDS:900}
+  download-url-expire-seconds: ${YQ_TOS_DOWNLOAD_URL_EXPIRE_SECONDS:900}
+
+yanque-ai:
+  # Java 后端转发 AI 问答时调用的 Python 服务地址。
+  # 本地开发默认启动在 http://localhost:8000。
+  base-url: ${YANQUE_AI_BASE_URL:http://localhost:8000}

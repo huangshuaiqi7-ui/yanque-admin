@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="完成考试模块以及预支付订单模块" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="day06" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="customMavenHome" value="$USER_HOME$/Documents/apache-maven-3.6.3" />
+        <option name="localRepository" value="$USER_HOME$/Documents/apache-maven-3.6.3/repository" />
+        <option name="mavenHomeTypeForPersistence" value="CUSTOM" />
+        <option name="userSettingsFile" value="$USER_HOME$/Documents/apache-maven-3.6.3/conf/settings.xml" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="3Gc1RF1yXjXeOtTuI9rSa6W486k" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.SysUserServiceImpl.executor": "Run",
+    "Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.YanQueApplication.executor": "Debug",
+    "git-widget-placeholder": "day07",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/huangjin/IdeaProjects/YanQue14/YanQue-Admin",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "MavenSettings",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\aproject\code\YanQue-Admin\src\main\resources" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.YanQueApplication">
+    <configuration name="SysUserServiceImpl" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="cn.yanque.modules.users.service.impl.SysUserServiceImpl" />
+      <module name="YanQue-Admin" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="cn.yanque.modules.users.service.impl.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="YanQueApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <option name="ACTIVE_PROFILES" value="dev" />
+      <module name="YanQue-Admin" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="cn.yanque.YanQueApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="cn.yanque.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.SysUserServiceImpl" />
+      <item itemvalue="Spring Boot.YanQueApplication" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.YanQueApplication" />
+        <item itemvalue="Application.SysUserServiceImpl" />
+        <item itemvalue="Spring Boot.YanQueApplication" />
+        <item itemvalue="Application.SysUserServiceImpl" />
+        <item itemvalue="Spring Boot.YanQueApplication" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="" />
+      <created>1784256034714</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1784256034714</updated>
+      <workItem from="1784256036236" duration="46800000" />
+      <workItem from="1784508758556" duration="14234000" />
+      <workItem from="1784594482380" duration="13014000" />
+      <workItem from="1784681143797" duration="349000" />
+      <workItem from="1784681544093" duration="96000" />
+      <workItem from="1784681697895" duration="113000" />
+      <workItem from="1784681842129" duration="8542000" />
+      <workItem from="1784707907375" duration="1561000" />
+      <workItem from="1784784128260" duration="15783000" />
+      <workItem from="1784941226117" duration="7238000" />
+    </task>
+    <task id="LOCAL-00001" summary="初始化项目">
+      <option name="closed" value="true" />
+      <created>1784259485101</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1784259485101</updated>
+    </task>
+    <task id="LOCAL-00002" summary="搭建了一些公共的类. 统一响应,全局异常处理器.">
+      <option name="closed" value="true" />
+      <created>1784276443959</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1784276443959</updated>
+    </task>
+    <task id="LOCAL-00003" summary="实现登录逻辑">
+      <option name="closed" value="true" />
+      <created>1784287378660</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1784287378660</updated>
+    </task>
+    <task id="LOCAL-00004" summary="实现登录优化, jwt , sign, redisUtils工具类的优化, 常量抽取的一些优化.">
+      <option name="closed" value="true" />
+      <created>1784342469340</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1784342469341</updated>
+    </task>
+    <task id="LOCAL-00005" summary="完成用户的基本操作">
+      <option name="closed" value="true" />
+      <created>1784351453885</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1784351453885</updated>
+    </task>
+    <task id="LOCAL-00006" summary="完成请求签名,guid日志">
+      <option name="closed" value="true" />
+      <created>1784373702452</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1784373702452</updated>
+    </task>
+    <task id="LOCAL-00007" summary="完成用户角色权限校验过滤器&amp;以及用户的登出功能.">
+      <option name="closed" value="true" />
+      <created>1784532828522</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1784532828522</updated>
+    </task>
+    <task id="LOCAL-00008" summary="完成校区管理, 课程管理等模块.">
+      <option name="closed" value="true" />
+      <created>1784539925494</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1784539925494</updated>
+    </task>
+    <task id="LOCAL-00009" summary="完成课程详情Excel文件的上传">
+      <option name="closed" value="true" />
+      <created>1784601308486</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1784601308486</updated>
+    </task>
+    <task id="LOCAL-00010" summary="完成本地缓存开发">
+      <option name="closed" value="true" />
+      <created>1784691847916</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1784691847916</updated>
+    </task>
+    <task id="LOCAL-00011" summary="TOS上传以及作业管理模块">
+      <option name="closed" value="true" />
+      <created>1784714359917</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1784714359917</updated>
+    </task>
+    <task id="LOCAL-00012" summary="完成考试模块以及预支付订单模块">
+      <option name="closed" value="true" />
+      <created>1784890891548</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1784890891548</updated>
+    </task>
+    <task id="LOCAL-00013" summary="完成考试模块以及预支付订单模块">
+      <option name="closed" value="true" />
+      <created>1784969665582</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1784969665582</updated>
+    </task>
+    <task id="LOCAL-00014" summary="完成考试模块以及预支付订单模块">
+      <option name="closed" value="true" />
+      <created>1784969676294</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1784969676294</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="初始化项目" />
+    <MESSAGE value="搭建了一些公共的类. 统一响应,全局异常处理器." />
+    <MESSAGE value="实现登录逻辑" />
+    <MESSAGE value="实现登录优化, jwt , sign, redisUtils工具类的优化, 常量抽取的一些优化." />
+    <MESSAGE value="完成用户的基本操作" />
+    <MESSAGE value="完成请求签名,guid日志" />
+    <MESSAGE value="完成用户角色权限的基本操作" />
+    <MESSAGE value="完成用户角色权限校验过滤器&amp;以及用户的登出功能." />
+    <MESSAGE value="完成校区管理, 课程管理等模块." />
+    <MESSAGE value="完成课程详情Excel文件的上传" />
+    <MESSAGE value="完成本地缓存开发" />
+    <MESSAGE value="TOS上传以及作业管理模块" />
+    <MESSAGE value="支付模块" />
+    <MESSAGE value="完成考试模块以及预支付订单模块" />
+    <option name="LAST_COMMIT_MESSAGE" value="完成考试模块以及预支付订单模块" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/users/service/SysUserService.java</url>
+          <line>15</line>
+          <properties class="cn.yanque.modules.users.service.SysUserService" method="logout">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/courses/service/SysCourseService.java</url>
+          <line>24</line>
+          <properties class="cn.yanque.modules.courses.service.SysCourseService" method="importDetails">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.students.mapper.StudentMapper">
+    <resultMap id="StudentMap" type="cn.yanque.modules.students.pojo.entity.StudentEntity">
+        <id property="id" column="id"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="studentName" column="student_name"/>
+        <result property="studentPhone" column="student_phone"/>
+        <result property="password" column="password"/>
+        <result property="education" column="education"/>
+        <result property="gradeYear" column="grade_year"/>
+        <result property="school" column="school"/>
+        <result property="major" column="major"/>
+        <result property="teachingMode" column="teaching_mode"/>
+        <result property="classId" column="class_id"/>
+        <result property="studentTag" column="student_tag"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <resultMap id="StudentResMap" type="cn.yanque.modules.students.pojo.vo.resvo.StudentRes">
+        <id property="id" column="id"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="studentName" column="student_name"/>
+        <result property="studentPhone" column="student_phone"/>
+        <result property="education" column="education"/>
+        <result property="gradeYear" column="grade_year"/>
+        <result property="school" column="school"/>
+        <result property="major" column="major"/>
+        <result property="teachingMode" column="teaching_mode"/>
+        <result property="classId" column="class_id"/>
+        <result property="classPeriod" column="class_period"/>
+        <result property="productContent" column="product_content"/>
+        <result property="studentTag" column="student_tag"/>
+        <result property="status" column="status"/>
+        <result property="sopAssigned" column="sop_assigned"/>
+        <result property="sopId" column="sop_id"/>
+        <result property="sopMentorId" column="sop_mentor_id"/>
+        <result property="sopMentorName" column="sop_mentor_name"/>
+        <result property="sopVideoObjectKey" column="sop_video_object_key"/>
+        <result property="sopVideoFileName" column="sop_video_file_name"/>
+        <result property="sopTime" column="sop_time"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    <sql id="BaseColumns">
+        id, student_no, student_name, student_phone, password, education, grade_year,
+        school, major, teaching_mode, class_id, student_tag, status, created_at, updated_at
+    </sql>
+    <select id="selectById" resultMap="StudentMap">
+        select <include refid="BaseColumns"/> from student where id = #{id}
+    </select>
+    <select id="selectByPhone" resultMap="StudentMap">
+        select <include refid="BaseColumns"/> from student where student_phone = #{phone}
+    </select>
+    <select id="selectPage" resultMap="StudentResMap">
+        select
+            s.id, s.student_no, s.student_name, s.student_phone, s.education, s.grade_year,
+            s.school, s.major, s.teaching_mode, s.class_id, c.class_period,
+            pc.product_content, s.student_tag, s.status,
+            case when sop.id is null then false else true end as sop_assigned,
+            sop.id as sop_id, sop.mentor_id as sop_mentor_id,
+            coalesce(nullif(u.real_name, ''), nullif(u.nickname, ''), u.username) as sop_mentor_name,
+            sop.sop_video_object_key, sop.sop_video_file_name, sop.sop_time,
+            s.created_at, s.updated_at
+        from student s
+        left join sys_class c on c.id = s.class_id
+        left join (
+            select sp.student_id, group_concat(distinct op.course_content order by op.id separator '、') as product_content
+            from student_product sp
+            inner join order_product op on op.id = sp.product_id
+            where sp.status = 'ACTIVE'
+            group by sp.student_id
+        ) pc on pc.student_id = s.id
+        left join (
+            select ss.*
+            from student_sop ss
+            inner join (
+                select student_id, max(id) as id
+                from student_sop
+                where status != 'CANCELED'
+                group by student_id
+            ) latest on latest.id = ss.id
+        ) sop on sop.student_id = s.id
+        left join sys_user u on u.id = sop.mentor_id
+        <where>
+            <if test="studentName != null and studentName != ''">and s.student_name like concat('%', #{studentName}, '%')</if>
+            <if test="studentPhone != null and studentPhone != ''">and s.student_phone like concat('%', #{studentPhone}, '%')</if>
+            <if test="education != null and education != ''">and s.education = #{education}</if>
+            <if test="school != null and school != ''">and s.school like concat('%', #{school}, '%')</if>
+            <if test="teachingMode != null and teachingMode != ''">and s.teaching_mode = #{teachingMode}</if>
+            <if test="studentTag != null and studentTag != ''">and s.student_tag = #{studentTag}</if>
+            <if test="status != null and status != ''">and s.status = #{status}</if>
+        </where>
+        order by s.id desc
+    </select>
+    <select id="selectTagOptions" resultType="string">
+        select student_tag from student_followup_tag
+        where status = 'ACTIVE'
+        union
+        select distinct student_tag from student
+        where student_tag is not null and student_tag != ''
+        order by student_tag
+    </select>
+    <select id="countClass" resultType="int">
+        select count(*) from sys_class where id = #{classId}
+    </select>
+    <select id="countActiveUser" resultType="int">
+        select count(*) from sys_user where id = #{userId} and status = 'ACTIVE'
+    </select>
+    <select id="countActiveSop" resultType="int">
+        select count(*) from student_sop where student_id = #{studentId} and status != 'CANCELED'
+    </select>
+    <update id="updateClass">
+        update student set class_id = #{classId}, updated_at = now() where id = #{id}
+    </update>
+    <update id="updateTag">
+        update student set student_tag = #{studentTag}, updated_at = now() where id = #{id}
+    </update>
+    <insert id="insertSop">
+        insert into student_sop(student_id, mentor_id, status, created_at, updated_at)
+        values(#{studentId}, #{mentorId}, 'ASSIGNED', now(), now())
+    </insert>
+    <select id="selectLastInsertId" resultType="long">
+        select last_insert_id()
+    </select>
+</mapper>
