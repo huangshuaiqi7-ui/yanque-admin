@@ -20,6 +20,8 @@ import com.alibaba.fastjson2.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -58,16 +60,20 @@ public class AiChatService {
     private final StudentMapper studentMapper;
     private final AiServiceClient aiServiceClient;
     private final RedisUtils redisUtils;
+    private final TransactionTemplate transactionTemplate;
 
     public AiChatService(AiChatMapper mapper, StudentMapper studentMapper,
-                         AiServiceClient aiServiceClient, RedisUtils redisUtils) {
+                         AiServiceClient aiServiceClient, RedisUtils redisUtils,
+                         TransactionTemplate transactionTemplate) {
         this.mapper = mapper;
         this.studentMapper = studentMapper;
         this.aiServiceClient = aiServiceClient;
         this.redisUtils = redisUtils;
+        this.transactionTemplate = transactionTemplate;
     }
 
     /** 查询当前学生的会话列表，并把 Entity 转成前端需要的 VO。 */
+    @Transactional(readOnly = true)
     public List<AiChatSessionRes> sessions() {
         return mapper.selectSessions(currentStudent().getId()).stream()
                 .map(this::toSessionRes)
@@ -75,6 +81,7 @@ public class AiChatService {
     }
 
     /** 手动创建一个空会话，标题先用默认值。 */
+    @Transactional(rollbackFor = Exception.class)
     public AiChatCreateSessionRes createSession() {
         StudentEntity student = currentStudent();
         AiChatSessionEntity session = new AiChatSessionEntity();
@@ -85,6 +92,7 @@ public class AiChatService {
     }
 
     /** 查询会话消息前先校验会话归属，避免学生读取别人的记录。 */
+    @Transactional(readOnly = true)
     public List<AiChatMessageRes> messages(Long sessionId) {
         StudentEntity student = currentStudent();
         requireSession(sessionId, student.getId());
@@ -94,6 +102,7 @@ public class AiChatService {
     }
 
     /** 逻辑删除当前学生自己的会话。 */
+    @Transactional(rollbackFor = Exception.class)
     public void deleteSession(Long sessionId) {
         StudentEntity student = currentStudent();
         if (mapper.deleteSession(sessionId, student.getId()) != 1) {
@@ -107,6 +116,7 @@ public class AiChatService {
      * 请求线程只负责创建 emitter；真正的 AI 调用放到后台线程里做，
      * 这样前端可以边收到 delta 边展示，不用等整段回答完成。
      */
+    @Transactional(rollbackFor = Exception.class)
     public SseEmitter send(AiChatSendReq req) {
         StudentEntity student = currentStudent();
         AiChatSessionEntity session = prepareSession(req, student.getId());
@@ -172,7 +182,8 @@ public class AiChatService {
                     answer.append(content);
                     sendEvent(emitter, "delta", Map.of("content", content));
                 } else if ("done".equals(event.event())) {
-                    saveAssistantMessage(session.getId(), answer.toString(), data);
+                    transactionTemplate.executeWithoutResult(status ->
+                            saveAssistantMessage(session.getId(), answer.toString(), data));
                     Map<String, Object> done = new LinkedHashMap<>();
                     done.put("sessionId", session.getId());
                     done.put("model", data.getString("model"));
@@ -239,8 +250,10 @@ public class AiChatService {
                 return;
             }
 
-            mapper.updateSummary(sessionId, newSummary, lastCompressedMessageId);
-            mapper.markCompressed(sessionId, lastCompressedMessageId);
+            transactionTemplate.executeWithoutResult(status -> {
+                mapper.updateSummary(sessionId, newSummary, lastCompressedMessageId);
+                mapper.markCompressed(sessionId, lastCompressedMessageId);
+            });
             log.info("AI会话已压缩: sessionId={}, lastCompressedMessageId={}", sessionId, lastCompressedMessageId);
         } catch (Exception exception) {
             log.warn("AI会话压缩失败，不影响本次回答: sessionId={}", sessionId, exception);
