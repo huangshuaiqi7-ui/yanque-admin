@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="完成考试模块以及预支付订单模块" />
+    <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="完成考试模块以及预支付订单模块">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/CommonErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/CommonErrorCode.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,6 +29,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -59,7 +64,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.YanQueApplication.executor": "Debug",
-    "git-widget-placeholder": "day07",
+    "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/huangjin/IdeaProjects/YanQue14/YanQue-Admin",
     "node.js.detected.package.eslint": "true",
@@ -260,7 +265,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784969676294</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="完成考试模块以及预支付订单模块">
+      <option name="closed" value="true" />
+      <created>1786498380347</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1786498380347</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

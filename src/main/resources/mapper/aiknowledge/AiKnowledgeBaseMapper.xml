@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aiknowledge.mapper.AiKnowledgeBaseMapper">
+    <resultMap id="KnowledgeBaseMap" type="cn.yanque.modules.aiknowledge.pojo.entity.AiKnowledgeBaseEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="documentCount" column="document_count"/>
+        <result property="chunkCount" column="chunk_count"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="selectPage" resultMap="KnowledgeBaseMap">
+        select id, name, code, description, status, document_count, chunk_count,
+               created_by, updated_by, created_at, updated_at
+        from ai_knowledge_base
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (name like concat('%', #{keyword}, '%')
+                or code like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by updated_at desc, id desc
+    </select>
+
+    <select id="selectById" resultMap="KnowledgeBaseMap">
+        select id, name, code, description, status, document_count, chunk_count,
+               created_by, updated_by, created_at, updated_at
+        from ai_knowledge_base
+        where id = #{id}
+    </select>
+
+    <select id="selectByCode" resultMap="KnowledgeBaseMap">
+        select id, name, code, description, status, document_count, chunk_count,
+               created_by, updated_by, created_at, updated_at
+        from ai_knowledge_base
+        where code = #{code}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into ai_knowledge_base(name, code, description, status, document_count, chunk_count)
+        values(#{name}, #{code}, #{description}, #{status}, #{documentCount}, #{chunkCount})
+    </insert>
+
+    <update id="updateById">
+        update ai_knowledge_base
+        set name = #{name},
+            description = #{description}
+        where id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        update ai_knowledge_base set status = #{status} where id = #{id}
+    </update>
+
+    <update id="refreshStatistics">
+        update ai_knowledge_base kb
+        set document_count = (
+                select count(1)
+                from ai_knowledge_document doc
+                where doc.knowledge_base_id = #{id}
+                  and doc.status = 'READY'
+            ),
+            chunk_count = (
+                select coalesce(sum(doc.chunk_count), 0)
+                from ai_knowledge_document doc
+                where doc.knowledge_base_id = #{id}
+                  and doc.status = 'READY'
+            )
+        where kb.id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from ai_knowledge_base where id = #{id}
+    </delete>
+</mapper>

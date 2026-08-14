@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aiknowledge.mapper.AiKnowledgeDocumentMapper">
+    <resultMap id="KnowledgeDocumentMap" type="cn.yanque.modules.aiknowledge.pojo.entity.AiKnowledgeDocumentEntity">
+        <id property="id" column="id"/>
+        <result property="knowledgeBaseId" column="knowledge_base_id"/>
+        <result property="knowledgeBaseCode" column="knowledge_base_code"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="objectKey" column="object_key"/>
+        <result property="fileType" column="file_type"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="status" column="status"/>
+        <result property="chunkCount" column="chunk_count"/>
+        <result property="version" column="version"/>
+        <result property="lastErrorMessage" column="last_error_message"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, knowledge_base_id, knowledge_base_code, name, code, object_key, file_type, file_size,
+        status, chunk_count, version, last_error_message, created_by, updated_by, created_at, updated_at
+    </sql>
+
+    <select id="selectPage" resultMap="KnowledgeDocumentMap">
+        select <include refid="BaseColumns"/>
+        from ai_knowledge_document
+        <where>
+            knowledge_base_id = #{knowledgeBaseId}
+            <if test="keyword != null and keyword != ''">
+                and (name like concat('%', #{keyword}, '%')
+                or code like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by updated_at desc, id desc
+    </select>
+
+    <select id="selectById" resultMap="KnowledgeDocumentMap">
+        select <include refid="BaseColumns"/>
+        from ai_knowledge_document
+        where id = #{id}
+    </select>
+
+    <select id="selectByIdAndKnowledgeBaseId" resultMap="KnowledgeDocumentMap">
+        select <include refid="BaseColumns"/>
+        from ai_knowledge_document
+        where id = #{id}
+          and knowledge_base_id = #{knowledgeBaseId}
+    </select>
+
+    <select id="selectByCode" resultMap="KnowledgeDocumentMap">
+        select <include refid="BaseColumns"/>
+        from ai_knowledge_document
+        where knowledge_base_id = #{knowledgeBaseId}
+          and code = #{code}
+    </select>
+
+    <select id="selectByName" resultMap="KnowledgeDocumentMap">
+        select <include refid="BaseColumns"/>
+        from ai_knowledge_document
+        where knowledge_base_id = #{knowledgeBaseId}
+          and name = #{name}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into ai_knowledge_document(
+            knowledge_base_id, knowledge_base_code, name, code, object_key, file_type, file_size,
+            status, chunk_count, version, last_error_message
+        )
+        values(
+            #{knowledgeBaseId}, #{knowledgeBaseCode}, #{name}, #{code}, #{objectKey}, #{fileType}, #{fileSize},
+            #{status}, #{chunkCount}, #{version}, #{lastErrorMessage}
+        )
+    </insert>
+
+    <update id="markIndexing">
+        update ai_knowledge_document
+        set status = 'INDEXING',
+            version = #{version},
+            chunk_count = 0,
+            last_error_message = null
+        where id = #{id}
+    </update>
+
+    <update id="markReady">
+        update ai_knowledge_document
+        set status = 'READY',
+            chunk_count = #{chunkCount},
+            last_error_message = null
+        where id = #{id}
+          and version = #{version}
+    </update>
+
+    <update id="markFailed">
+        update ai_knowledge_document
+        set status = 'FAILED',
+            chunk_count = 0,
+            last_error_message = #{errorMessage}
+        where id = #{id}
+          and version = #{version}
+    </update>
+
+    <delete id="deleteById">
+        delete from ai_knowledge_document where id = #{id}
+    </delete>
+
+    <delete id="deleteByKnowledgeBaseId">
+        delete from ai_knowledge_document where knowledge_base_id = #{knowledgeBaseId}
+    </delete>
+</mapper>
