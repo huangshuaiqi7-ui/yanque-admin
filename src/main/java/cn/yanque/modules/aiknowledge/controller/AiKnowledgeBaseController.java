@@ -6,17 +6,23 @@ import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeBaseCreateReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeBasePageReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeBaseStatusReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeBaseUpdateReq;
+import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeQaReq;
+import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeRecallReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeBaseRes;
+import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeRecallRes;
 import cn.yanque.modules.aiknowledge.service.AiKnowledgeBaseService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Locale;
 import java.util.Map;
@@ -97,6 +103,32 @@ public class AiKnowledgeBaseController {
     public ApiResponse<Map<String, Object>> updateStatus(@PathVariable Long id, @Valid @RequestBody AiKnowledgeBaseStatusReq req) {
         service.updateStatus(id, req);
         return ApiResponse.success(Map.of("id", id, "status", req.getStatus().trim().toUpperCase(Locale.ROOT)));
+    }
+
+    /**
+     * 执行知识库召回测试。
+     *
+     * @param id 知识库ID
+     * @param req 召回查询、模式和 topK
+     * @return 召回到的 chunk 列表
+     */
+    @PostMapping("/{id}/recall")
+    public ApiResponse<AiKnowledgeRecallRes> recall(@PathVariable Long id, @Valid @RequestBody AiKnowledgeRecallReq req) {
+        return ApiResponse.success(service.recall(id, req));
+    }
+
+    /**
+     * 执行知识库问答测试。
+     *
+     * 这里不能包 ApiResponse，因为 SSE 需要持续输出 citations、delta、done 或 error 事件。
+     *
+     * @param id 知识库ID
+     * @param req 问答问题、召回模式和 topK
+     * @return 流式问答 SSE
+     */
+    @PostMapping(value = "/{id}/qa/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<SseEmitter> qa(@PathVariable Long id, @Valid @RequestBody AiKnowledgeQaReq req) {
+        return ResponseEntity.ok(service.qa(id, req));
     }
 
     /**

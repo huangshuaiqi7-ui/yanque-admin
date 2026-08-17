@@ -11,9 +11,12 @@ import cn.yanque.modules.aiknowledge.mapper.AiKnowledgeBaseMapper;
 import cn.yanque.modules.aiknowledge.mapper.AiKnowledgeDocumentMapper;
 import cn.yanque.modules.aiknowledge.pojo.entity.AiKnowledgeBaseEntity;
 import cn.yanque.modules.aiknowledge.pojo.entity.AiKnowledgeDocumentEntity;
+import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeDocumentChunkPageReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeDocumentCreateReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeDocumentPageReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeDocumentPresignReq;
+import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeDocumentChunkDetailRes;
+import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeDocumentChunkRes;
 import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeDocumentCreateRes;
 import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeDocumentRes;
 import cn.yanque.modules.aiknowledge.service.AiKnowledgeDocumentService;
@@ -105,6 +108,44 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
         // 开启异步入向量数据库
         submitIndexTask(knowledgeBase.getId(), document.getId());
         return new AiKnowledgeDocumentCreateRes(document.getId(), document.getStatus());
+    }
+
+    /**
+     * 从 Milvus 分页查询当前文档的 chunk 摘要。
+     */
+    @Override
+    public PageResult<AiKnowledgeDocumentChunkRes> pageChunks(Long knowledgeBaseId,
+                                                              Long documentId,
+                                                              AiKnowledgeDocumentChunkPageReq req) {
+        requireKnowledgeBase(knowledgeBaseId);
+        AiKnowledgeDocumentEntity document = requireDocument(knowledgeBaseId, documentId);
+        if (!"READY".equals(document.getStatus())) {
+            return new PageResult<>(0L, req.getPageNum(), req.getPageSize(), List.of());
+        }
+        try {
+            List<AiKnowledgeDocumentChunkRes> records = pythonClient.queryKnowledgeDocumentChunks(document, req);
+            return new PageResult<>(Long.valueOf(document.getChunkCount() == null ? 0 : document.getChunkCount()),
+                    req.getPageNum(), req.getPageSize(), records);
+        } catch (Exception exception) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_VECTOR_INDEX_FAILED);
+        }
+    }
+
+    /**
+     * 从 Milvus 查询当前文档某个 chunk 的完整内容。
+     */
+    @Override
+    public AiKnowledgeDocumentChunkDetailRes chunkDetail(Long knowledgeBaseId, Long documentId, Integer chunkIndex) {
+        requireKnowledgeBase(knowledgeBaseId);
+        AiKnowledgeDocumentEntity document = requireDocument(knowledgeBaseId, documentId);
+        if (!"READY".equals(document.getStatus())) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_STATUS_INVALID);
+        }
+        try {
+            return pythonClient.getKnowledgeDocumentChunkDetail(document, chunkIndex);
+        } catch (Exception exception) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_VECTOR_INDEX_FAILED);
+        }
     }
 
     /**

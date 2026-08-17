@@ -206,7 +206,9 @@ public enum CommonErrorCode implements IErrorCode{
     KNOWLEDGE_DOCUMENT_FILE_INVALID(31105, "知识库文档只支持指定目录下的Markdown文件"),
     KNOWLEDGE_DOCUMENT_OPERATION_FAILED(31106, "知识库文档操作失败"),
     KNOWLEDGE_DOCUMENT_VECTOR_INDEX_FAILED(31107, "知识库文档向量入库失败"),
-    KNOWLEDGE_DOCUMENT_VECTOR_DELETE_FAILED(31108, "知识库文档向量删除失败");
+    KNOWLEDGE_DOCUMENT_VECTOR_DELETE_FAILED(31108, "知识库文档向量删除失败"),
+    KNOWLEDGE_RECALL_MODE_INVALID(31201, "知识库召回模式不合法"),
+    KNOWLEDGE_RECALL_FAILED(31202, "知识库召回失败");
 
 
     private Integer code;

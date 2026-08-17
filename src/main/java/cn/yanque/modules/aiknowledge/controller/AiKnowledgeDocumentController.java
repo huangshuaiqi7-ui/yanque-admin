@@ -3,12 +3,16 @@ package cn.yanque.modules.aiknowledge.controller;
 import cn.yanque.commons.apires.ApiResponse;
 import cn.yanque.commons.apires.PageResult;
 import cn.yanque.commons.pojo.vo.resvo.PresignUploadRes;
+import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeDocumentChunkPageReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeDocumentCreateReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeDocumentPageReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeDocumentPresignReq;
+import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeDocumentChunkDetailRes;
+import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeDocumentChunkRes;
 import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeDocumentCreateRes;
 import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeDocumentRes;
 import cn.yanque.modules.aiknowledge.service.AiKnowledgeDocumentService;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -66,6 +70,36 @@ public class AiKnowledgeDocumentController {
     public ApiResponse<AiKnowledgeDocumentCreateRes> create(@PathVariable Long knowledgeBaseId,
                                                             @Valid @RequestBody AiKnowledgeDocumentCreateReq req) {
         return ApiResponse.success(service.create(knowledgeBaseId, req));
+    }
+
+    /**
+     * 分页查询当前文档在 Milvus 中的 chunk 摘要。
+     *
+     * @param knowledgeBaseId 知识库ID
+     * @param documentId 文档ID
+     * @param req 分页条件
+     * @return chunk 分页结果
+     */
+    @GetMapping("/{documentId}/chunks")
+    public ApiResponse<PageResult<AiKnowledgeDocumentChunkRes>> pageChunks(@PathVariable Long knowledgeBaseId,
+                                                                           @PathVariable Long documentId,
+                                                                           @Valid AiKnowledgeDocumentChunkPageReq req) {
+        return ApiResponse.success(service.pageChunks(knowledgeBaseId, documentId, req));
+    }
+
+    /**
+     * 查询当前文档在 Milvus 中的指定 chunk 完整内容。
+     *
+     * @param knowledgeBaseId 知识库ID
+     * @param documentId 文档ID
+     * @param chunkIndex chunk序号
+     * @return chunk 完整内容
+     */
+    @GetMapping("/{documentId}/chunks/{chunkIndex}")
+    public ApiResponse<AiKnowledgeDocumentChunkDetailRes> chunkDetail(@PathVariable Long knowledgeBaseId,
+                                                                      @PathVariable Long documentId,
+                                                                      @PathVariable @Min(0) Integer chunkIndex) {
+        return ApiResponse.success(service.chunkDetail(knowledgeBaseId, documentId, chunkIndex));
     }
 
     /**

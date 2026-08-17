@@ -12,22 +12,33 @@ import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeBaseCreateReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeBasePageReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeBaseStatusReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeBaseUpdateReq;
+import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeQaReq;
+import cn.yanque.modules.aiknowledge.pojo.vo.reqvo.AiKnowledgeRecallReq;
 import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeBaseRes;
+import cn.yanque.modules.aiknowledge.pojo.vo.resvo.AiKnowledgeRecallRes;
 import cn.yanque.modules.aiknowledge.service.AiKnowledgeBaseService;
 import cn.yanque.modules.aiknowledge.service.AiKnowledgePythonClient;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class AiKnowledgeBaseServiceImpl implements AiKnowledgeBaseService {
     private static final Set<String> STATUSES = Set.of("ACTIVE", "INACTIVE");
+    private static final Set<String> RECALL_MODES = Set.of("SEMANTIC", "KEYWORD", "HYBRID");
 
     private final AiKnowledgeBaseMapper mapper;
     private final AiKnowledgeDocumentMapper documentMapper;
@@ -126,6 +137,70 @@ public class AiKnowledgeBaseServiceImpl implements AiKnowledgeBaseService {
     }
 
     @Override
+    public AiKnowledgeRecallRes recall(Long id, AiKnowledgeRecallReq req) {
+        AiKnowledgeBaseEntity knowledgeBase = require(id);
+        if (!"ACTIVE".equals(knowledgeBase.getStatus())) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_BASE_STATUS_INVALID);
+        }
+        req.setMode(normalizeRecallMode(req.getMode()));
+        req.setQuery(StrUtil.trim(req.getQuery()));
+        req.setTopK(normalizeTopK(req.getTopK()));
+        try {
+            return pythonClient.recallKnowledgeBase(knowledgeBase, req);
+        } catch (Exception exception) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_RECALL_FAILED);
+        }
+    }
+
+    @Override
+    public SseEmitter qa(Long id, AiKnowledgeQaReq req) {
+        AiKnowledgeBaseEntity knowledgeBase = require(id);
+        if (!"ACTIVE".equals(knowledgeBase.getStatus())) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_BASE_STATUS_INVALID);
+        }
+        req.setRecallMode(normalizeRecallMode(req.getRecallMode()));
+        req.setQuestion(StrUtil.trim(req.getQuestion()));
+        req.setTopK(normalizeTopK(req.getTopK()));
+
+        SseEmitter emitter = new SseEmitter(0L);
+        new Thread(() -> streamQa(emitter, knowledgeBase, req)).start();
+        return emitter;
+    }
+
+    /**
+     * 调用 Python 知识库问答流式接口，并把 SSE 事件原样转给前端。
+     */
+    private void streamQa(SseEmitter emitter, AiKnowledgeBaseEntity knowledgeBase, AiKnowledgeQaReq req) {
+        AtomicBoolean finished = new AtomicBoolean(false);
+        try {
+            pythonClient.streamKnowledgeBaseQa(knowledgeBase, req, event -> {
+                JSONObject data = event.data();
+                sendEvent(emitter, event.event(), data);
+                if ("done".equals(event.event()) || "error".equals(event.event())) {
+                    finished.set(true);
+                    emitter.complete();
+                }
+            });
+            if (!finished.get()) {
+                sendEvent(emitter, "error", Map.of("message", "AI知识库问答响应异常，请稍后重试"));
+                emitter.complete();
+            }
+        } catch (Exception exception) {
+            sendEvent(emitter, "error", Map.of("message", "AI知识库问答暂时不可用，请稍后重试"));
+            emitter.complete();
+        }
+    }
+
+    /** 发送一条 SSE 事件给前端。 */
+    private void sendEvent(SseEmitter emitter, String name, Object data) {
+        try {
+            emitter.send(SseEmitter.event().name(name).data(JSON.toJSONString(data == null ? new LinkedHashMap<>() : data)));
+        } catch (IOException exception) {
+            throw new IllegalStateException(exception);
+        }
+    }
+
+    @Override
     public void delete(Long id) {
         AiKnowledgeBaseEntity knowledgeBase = require(id);
         deleteVectorCollection(knowledgeBase);
@@ -189,6 +264,24 @@ public class AiKnowledgeBaseServiceImpl implements AiKnowledgeBaseService {
     private String normalize(String value) {
         String trimmed = StrUtil.trim(value);
         return StrUtil.isBlank(trimmed) ? null : trimmed.toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeRecallMode(String value) {
+        String mode = normalize(value);
+        if (mode == null || !RECALL_MODES.contains(mode)) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_RECALL_MODE_INVALID);
+        }
+        return mode;
+    }
+
+    private Integer normalizeTopK(Integer value) {
+        if (value == null) {
+            return 5;
+        }
+        if (value < 1 || value > 20) {
+            throw BusinessException.of(CommonErrorCode.PARAM_VALID_FAILED);
+        }
+        return value;
     }
 
     private AiKnowledgeBaseRes toRes(AiKnowledgeBaseEntity knowledgeBase) {
