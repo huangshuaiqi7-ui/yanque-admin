@@ -220,7 +220,9 @@ public enum CommonErrorCode implements IErrorCode{
     PROMPT_TEMPLATE_VERSION_CONTENT_EMPTY(32102, "提示词版本内容不能为空"),
     PROMPT_TEMPLATE_VERSION_VARIABLES_INVALID(32103, "提示词版本变量说明不是合法JSON"),
     PROMPT_TEMPLATE_VERSION_OPERATION_FAILED(32104, "提示词版本操作失败"),
-    PROMPT_ACTIVE_VERSION_NOT_FOUND(32105, "提示词当前启用版本不存在");
+    PROMPT_ACTIVE_VERSION_NOT_FOUND(32105, "提示词当前启用版本不存在"),
+    PROMPT_TEST_INVALID(32201, "提示词测试参数不合法"),
+    PROMPT_TEST_FAILED(32202, "提示词测试失败");
 
 
     private Integer code;

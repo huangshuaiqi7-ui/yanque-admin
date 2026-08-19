@@ -6,9 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="完成考试模块以及预支付订单模块">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/CommonErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/CommonErrorCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/config/WebMvcConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/config/WebMvcConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/controller/PromptTemplateController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/controller/PromptTemplateController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/mapper/PromptTemplateMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/mapper/PromptTemplateMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/mapper/PromptTemplateVersionMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/mapper/PromptTemplateVersionMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/pojo/vo/resvo/PromptTemplateRes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/pojo/vo/resvo/PromptTemplateRes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/service/PromptTemplateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/service/PromptTemplateService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/service/impl/PromptTemplateServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiprompt/service/impl/PromptTemplateServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/aiprompt/PromptTemplateMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/aiprompt/PromptTemplateMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/aiprompt/PromptTemplateVersionMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/aiprompt/PromptTemplateVersionMapper.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -298,7 +304,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786926355575</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="完成考试模块以及预支付订单模块">
+      <option name="closed" value="true" />
+      <created>1787125170572</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1787125170572</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

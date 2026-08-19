@@ -15,4 +15,6 @@ public interface PromptTemplateVersionMapper {
     Integer selectMaxVersionNo(@Param("templateId") Long templateId);
 
     int insert(PromptTemplateVersionEntity version);
+
+    List<PromptTemplateVersionEntity> selectByIds(@Param("ids") List<Long> list);
 }

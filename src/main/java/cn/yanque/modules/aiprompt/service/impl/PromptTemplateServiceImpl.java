@@ -6,7 +6,9 @@ import cn.yanque.commons.apires.PageResult;
 import cn.yanque.commons.enums.CommonStatusEnum;
 import cn.yanque.commons.exception.BusinessException;
 import cn.yanque.modules.aiprompt.mapper.PromptTemplateMapper;
+import cn.yanque.modules.aiprompt.mapper.PromptTemplateVersionMapper;
 import cn.yanque.modules.aiprompt.pojo.entity.PromptTemplateEntity;
+import cn.yanque.modules.aiprompt.pojo.entity.PromptTemplateVersionEntity;
 import cn.yanque.modules.aiprompt.pojo.vo.reqvo.PromptTemplateCreateReq;
 import cn.yanque.modules.aiprompt.pojo.vo.reqvo.PromptTemplatePageReq;
 import cn.yanque.modules.aiprompt.pojo.vo.reqvo.PromptTemplateStatusReq;
@@ -19,9 +21,9 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PromptTemplateServiceImpl implements PromptTemplateService {
@@ -30,14 +32,18 @@ public class PromptTemplateServiceImpl implements PromptTemplateService {
     private static final Set<String> SCENE_CODES = Set.of("CHAT", "RAG", "SUMMARY", "JUDGE", "STRUCTURED_EXTRACT");
 
     private final PromptTemplateMapper mapper;
+    private final PromptTemplateVersionMapper versionMapper;
 
     /**
      * 创建提示词模板服务实现。
      *
-     * @param mapper 提示词模板数据访问对象
+     * @param mapper        提示词模板数据访问对象
+     * @param versionMapper 提示词版本数据访问对象
      */
-    public PromptTemplateServiceImpl(PromptTemplateMapper mapper) {
+    public PromptTemplateServiceImpl(PromptTemplateMapper mapper,
+                                     PromptTemplateVersionMapper versionMapper) {
         this.mapper = mapper;
+        this.versionMapper = versionMapper;
     }
 
     /**
@@ -55,8 +61,25 @@ public class PromptTemplateServiceImpl implements PromptTemplateService {
                 normalizeCode(req.getAgentCode(), false),
                 status
         );
+
+        List<PromptTemplateVersionEntity> promptTemplateVersionEntityList = selectActiveVersions(rows);
         PageInfo<PromptTemplateEntity> info = new PageInfo<>(rows);
-        return new PageResult<>(info.getTotal(), info.getPageNum(), info.getPageSize(), rows.stream().map(this::toRes).toList());
+        return new PageResult<>(info.getTotal(), info.getPageNum(), info.getPageSize(),
+                rows.stream().map(promptTemplateEntity -> toRes(promptTemplateEntity, promptTemplateVersionEntityList))
+                        .toList());
+    }
+
+    /**
+     * 按提示词类型查询模板选项。
+     *
+     * @param promptType 提示词类型，SYSTEM 或 USER
+     * @return 模板选项列表
+     */
+    @Override
+    public List<PromptTemplateRes> options(String promptType) {
+        List<PromptTemplateEntity> rows = mapper.selectOptions(normalizePromptType(promptType));
+        List<PromptTemplateVersionEntity> versions = selectActiveVersions(rows);
+        return rows.stream().map(row -> toRes(row, versions)).toList();
     }
 
     /**
@@ -67,7 +90,9 @@ public class PromptTemplateServiceImpl implements PromptTemplateService {
      */
     @Override
     public PromptTemplateRes detail(Long id) {
-        return toRes(require(id));
+        PromptTemplateEntity promptTemplateEntity = require(id);
+        PromptTemplateVersionEntity promptTemplateVersionEntity = versionMapper.selectById(promptTemplateEntity.getId());
+        return toRes(require(id), Collections.singletonList(promptTemplateVersionEntity));
     }
 
     /**
@@ -271,7 +296,12 @@ public class PromptTemplateServiceImpl implements PromptTemplateService {
      * @param entity 提示词模板实体
      * @return 提示词模板响应对象
      */
-    private PromptTemplateRes toRes(PromptTemplateEntity entity) {
+    private PromptTemplateRes toRes(PromptTemplateEntity entity, List<PromptTemplateVersionEntity> promptTemplateVersionEntityList) {
+
+
+        Map<Long, Integer> collect = promptTemplateVersionEntityList.stream().collect(Collectors.toMap(PromptTemplateVersionEntity::getId, PromptTemplateVersionEntity::getVersionNo));
+
+
         PromptTemplateRes res = new PromptTemplateRes();
         res.setId(entity.getId());
         res.setCode(entity.getCode());
@@ -282,9 +312,30 @@ public class PromptTemplateServiceImpl implements PromptTemplateService {
         res.setStatus(entity.getStatus());
         res.setStatusText(CommonStatusEnum.getDescription(entity.getStatus()));
         res.setActiveVersionId(entity.getActiveVersionId());
+        res.setActiveVersionNo(collect.get(entity.getActiveVersionId()));
         res.setDescription(entity.getDescription());
         res.setCreateTime(entity.getCreateTime());
         res.setUpdateTime(entity.getUpdateTime());
         return res;
     }
+
+    /**
+     * 批量查询模板当前启用版本。
+     *
+     * @param rows 提示词模板列表
+     * @return 当前启用版本列表
+     */
+    private List<PromptTemplateVersionEntity> selectActiveVersions(List<PromptTemplateEntity> rows) {
+        List<Long> ids = rows.stream()
+                .map(PromptTemplateEntity::getActiveVersionId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return versionMapper.selectByIds(ids);
+    }
+
+
 }

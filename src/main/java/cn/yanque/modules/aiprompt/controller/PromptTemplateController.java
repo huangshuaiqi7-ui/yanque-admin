@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 管理端提示词模板接口。
@@ -46,6 +49,17 @@ public class PromptTemplateController {
     @GetMapping
     public ApiResponse<PageResult<PromptTemplateRes>> page(@Valid PromptTemplatePageReq req) {
         return ApiResponse.success(service.page(req));
+    }
+
+    /**
+     * 按提示词类型查询模板选项。
+     *
+     * @param promptType 提示词类型，SYSTEM 或 USER
+     * @return 模板选项列表
+     */
+    @GetMapping("/options")
+    public ApiResponse<List<PromptTemplateRes>> options(@RequestParam String promptType) {
+        return ApiResponse.success(service.options(promptType));
     }
 
     /**

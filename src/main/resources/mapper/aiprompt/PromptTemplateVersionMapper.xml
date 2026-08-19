@@ -41,4 +41,13 @@
         insert into prompt_template_version(template_id, version_no, content, variables, change_note, create_by)
         values(#{templateId}, #{versionNo}, #{content}, #{variables}, #{changeNote}, #{createBy})
     </insert>
+
+    <select id="selectByIds" resultMap="PromptTemplateVersionMap">
+        select <include refid="BaseColumns"/>
+        from prompt_template_version
+        where id in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

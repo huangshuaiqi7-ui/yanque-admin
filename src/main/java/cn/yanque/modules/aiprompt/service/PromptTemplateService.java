@@ -7,6 +7,8 @@ import cn.yanque.modules.aiprompt.pojo.vo.reqvo.PromptTemplateStatusReq;
 import cn.yanque.modules.aiprompt.pojo.vo.reqvo.PromptTemplateUpdateReq;
 import cn.yanque.modules.aiprompt.pojo.vo.resvo.PromptTemplateRes;
 
+import java.util.List;
+
 public interface PromptTemplateService {
     /**
      * 分页查询提示词模板。
@@ -15,6 +17,14 @@ public interface PromptTemplateService {
      * @return 提示词模板分页结果
      */
     PageResult<PromptTemplateRes> page(PromptTemplatePageReq req);
+
+    /**
+     * 按提示词类型查询模板选项。
+     *
+     * @param promptType 提示词类型，SYSTEM 或 USER
+     * @return 模板选项列表
+     */
+    List<PromptTemplateRes> options(String promptType);
 
     /**
      * 查询提示词模板详情。

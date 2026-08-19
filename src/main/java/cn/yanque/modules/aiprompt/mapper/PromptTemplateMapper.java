@@ -12,6 +12,8 @@ public interface PromptTemplateMapper {
                                           @Param("agentCode") String agentCode,
                                           @Param("status") String status);
 
+    List<PromptTemplateEntity> selectOptions(@Param("promptType") String promptType);
+
     PromptTemplateEntity selectById(@Param("id") Long id);
 
     PromptTemplateEntity selectByCode(@Param("code") String code);

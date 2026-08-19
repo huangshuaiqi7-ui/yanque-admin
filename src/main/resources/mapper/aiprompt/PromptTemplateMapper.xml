@@ -44,6 +44,13 @@
         where id = #{id}
     </select>
 
+    <select id="selectOptions" resultMap="PromptTemplateMap">
+        select <include refid="BaseColumns"/>
+        from prompt_template
+        where prompt_type = #{promptType}
+        order by status asc, update_time desc, id desc
+    </select>
+
     <select id="selectByCode" resultMap="PromptTemplateMap">
         select <include refid="BaseColumns"/>
         from prompt_template

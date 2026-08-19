@@ -30,8 +30,11 @@ public class PromptTemplateRes {
     /** 启用状态中文文案。 */
     private String statusText;
 
-    /** 当前启用版本ID，本期仅预留展示。 */
+    /** 当前启用版本ID。 */
     private Long activeVersionId;
+
+    /** 当前启用版本号。 */
+    private Integer activeVersionNo;
 
     /** 提示词模板说明。 */
     private String description;
