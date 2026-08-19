@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aiprompt.mapper.PromptTemplateMapper">
+    <resultMap id="PromptTemplateMap" type="cn.yanque.modules.aiprompt.pojo.entity.PromptTemplateEntity">
+        <id property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="agentCode" column="agent_code"/>
+        <result property="promptType" column="prompt_type"/>
+        <result property="sceneCode" column="scene_code"/>
+        <result property="status" column="status"/>
+        <result property="activeVersionId" column="active_version_id"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, code, name, agent_code, prompt_type, scene_code, status, active_version_id,
+        description, create_time, update_time
+    </sql>
+
+    <select id="selectPage" resultMap="PromptTemplateMap">
+        select <include refid="BaseColumns"/>
+        from prompt_template
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (name like concat('%', #{keyword}, '%')
+                or code like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="agentCode != null and agentCode != ''">
+                and agent_code = #{agentCode}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by update_time desc, id desc
+    </select>
+
+    <select id="selectById" resultMap="PromptTemplateMap">
+        select <include refid="BaseColumns"/>
+        from prompt_template
+        where id = #{id}
+    </select>
+
+    <select id="selectByCode" resultMap="PromptTemplateMap">
+        select <include refid="BaseColumns"/>
+        from prompt_template
+        where code = #{code}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into prompt_template(code, name, agent_code, prompt_type, scene_code, status, description)
+        values(#{code}, #{name}, #{agentCode}, #{promptType}, #{sceneCode}, #{status}, #{description})
+    </insert>
+
+    <update id="updateById">
+        update prompt_template
+        set name = #{name},
+            agent_code = #{agentCode},
+            prompt_type = #{promptType},
+            scene_code = #{sceneCode},
+            description = #{description}
+        where id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        update prompt_template set status = #{status} where id = #{id}
+    </update>
+
+    <update id="updateActiveVersionId">
+        update prompt_template set active_version_id = #{activeVersionId} where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from prompt_template where id = #{id}
+    </delete>
+</mapper>

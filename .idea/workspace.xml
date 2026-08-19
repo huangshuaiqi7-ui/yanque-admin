@@ -5,14 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="完成考试模块以及预支付订单模块">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/CommonErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/CommonErrorCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/controller/AiKnowledgeBaseController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/controller/AiKnowledgeBaseController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/controller/AiKnowledgeDocumentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/controller/AiKnowledgeDocumentController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/AiKnowledgeBaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/AiKnowledgeBaseService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/AiKnowledgeDocumentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/AiKnowledgeDocumentService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/AiKnowledgePythonClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/AiKnowledgePythonClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/impl/AiKnowledgeBaseServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/impl/AiKnowledgeBaseServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/impl/AiKnowledgeDocumentServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/impl/AiKnowledgeDocumentServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/config/WebMvcConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/config/WebMvcConfig.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +31,14 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar:///Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Locale.java" root0="SKIP_INSPECTION" />
+    <setting file="jar:///Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home/lib/src.zip!/java.base/java/util/concurrent/Executor.java" root0="SKIP_INSPECTION" />
+    <setting file="jar:///Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home/lib/src.zip!/java.base/java/util/concurrent/atomic/AtomicInteger.java" root0="SKIP_INSPECTION" />
+    <setting file="jar:///Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home/lib/src.zip!/java.base/java/util/function/Function.java" root0="SKIP_INSPECTION" />
+    <setting file="jar:///Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home/lib/src.zip!/java.base/jdk/internal/misc/Unsafe.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/Documents/apache-maven-3.6.3/repository/org/mybatis/mybatis/3.5.14/mybatis-3.5.14.jar!/org/apache/ibatis/binding/MapperProxy.class" root0="SKIP_INSPECTION" />
   </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -78,7 +82,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "MavenSettings",
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -286,7 +290,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786700132176</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="完成考试模块以及预支付订单模块">
+      <option name="closed" value="true" />
+      <created>1786926355575</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1786926355575</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

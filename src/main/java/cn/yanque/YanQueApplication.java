@@ -31,7 +31,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "cn.yanque.modules.payments.mapper",
         // AI 问答模块 Mapper，不加这里 Spring 启动时找不到 AiChatMapper Bean。
         "cn.yanque.modules.aichat.mapper",
-        "cn.yanque.modules.aiknowledge.mapper"
+        "cn.yanque.modules.aiknowledge.mapper",
+        "cn.yanque.modules.aiprompt.mapper"
 })
 public class YanQueApplication {
 

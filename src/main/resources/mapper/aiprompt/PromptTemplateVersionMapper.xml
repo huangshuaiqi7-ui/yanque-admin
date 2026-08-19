@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aiprompt.mapper.PromptTemplateVersionMapper">
+    <resultMap id="PromptTemplateVersionMap" type="cn.yanque.modules.aiprompt.pojo.entity.PromptTemplateVersionEntity">
+        <id property="id" column="id"/>
+        <result property="templateId" column="template_id"/>
+        <result property="versionNo" column="version_no"/>
+        <result property="content" column="content"/>
+        <result property="variables" column="variables"/>
+        <result property="changeNote" column="change_note"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        id, template_id, version_no, content, cast(variables as char) as variables,
+        change_note, create_by, create_time, update_time
+    </sql>
+
+    <select id="selectByTemplateId" resultMap="PromptTemplateVersionMap">
+        select <include refid="BaseColumns"/>
+        from prompt_template_version
+        where template_id = #{templateId}
+        order by version_no desc, id desc
+    </select>
+
+    <select id="selectById" resultMap="PromptTemplateVersionMap">
+        select <include refid="BaseColumns"/>
+        from prompt_template_version
+        where id = #{id}
+    </select>
+
+    <select id="selectMaxVersionNo" resultType="java.lang.Integer">
+        select max(version_no)
+        from prompt_template_version
+        where template_id = #{templateId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into prompt_template_version(template_id, version_no, content, variables, change_note, create_by)
+        values(#{templateId}, #{versionNo}, #{content}, #{variables}, #{changeNote}, #{createBy})
+    </insert>
+</mapper>
