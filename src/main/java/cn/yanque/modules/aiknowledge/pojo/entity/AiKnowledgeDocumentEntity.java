@@ -14,6 +14,8 @@ public class AiKnowledgeDocumentEntity {
     private String code;
     private String objectKey;
     private String fileType;
+    /** 切分策略：MARKDOWN 按标题切分，NONE 整体入库，BY_ITEM 按 JSON 数组元素入库。 */
+    private String chunkStrategy;
     private Long fileSize;
     /** 入库状态：INDEXING 入库中，READY 已完成，FAILED 失败。 */
     private String status;

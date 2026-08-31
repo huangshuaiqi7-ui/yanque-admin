@@ -20,5 +20,9 @@ public class AiKnowledgeDocumentCreateReq {
     @Size(max = 500, message = "文档对象Key长度不能超过500个字符")
     private String objectKey;
 
+    /** 可选：不传时后端按文件类型决定，md 默认 MARKDOWN，json 默认 NONE。 */
+    @Pattern(regexp = "^(MARKDOWN|NONE|BY_ITEM)$", message = "切分策略不合法")
+    private String chunkStrategy;
+
     private Long fileSize;
 }

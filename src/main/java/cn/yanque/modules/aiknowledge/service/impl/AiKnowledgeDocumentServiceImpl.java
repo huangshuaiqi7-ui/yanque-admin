@@ -37,6 +37,9 @@ import java.util.concurrent.Executor;
 public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentService {
     private static final Set<String> STATUSES = Set.of("INDEXING", "READY", "FAILED");
     private static final String FILE_TYPE_MD = "md";
+    private static final String FILE_TYPE_JSON = "json";
+    private static final Set<String> FILE_TYPES = Set.of(FILE_TYPE_MD, FILE_TYPE_JSON);
+    private static final Set<String> CHUNK_STRATEGIES = Set.of("MARKDOWN", "NONE", "BY_ITEM");
 
     private final AiKnowledgeBaseMapper knowledgeBaseMapper;
     private final AiKnowledgeDocumentMapper documentMapper;
@@ -76,7 +79,7 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
     public PresignUploadRes presignUpload(Long knowledgeBaseId, AiKnowledgeDocumentPresignReq req) {
         AiKnowledgeBaseEntity knowledgeBase = requireKnowledgeBase(knowledgeBaseId);
         String fileName = StrUtil.trim(req.getFileName());
-        validateMdFileName(fileName);
+        validateSupportedFileName(fileName);
         String objectKey = buildDocumentObjectKey(knowledgeBase.getCode(), fileName);
         return tosPresignService.presignUpload(objectKey);
     }
@@ -184,7 +187,8 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
         document.setName(StrUtil.trim(req.getName()));
         document.setCode(StrUtil.trim(req.getCode()).toLowerCase(Locale.ROOT));
         document.setObjectKey(StrUtil.trim(req.getObjectKey()));
-        document.setFileType(FILE_TYPE_MD);
+        document.setFileType(resolveFileType(document.getObjectKey()));
+        document.setChunkStrategy(resolveChunkStrategy(document.getFileType(), req.getChunkStrategy()));
         document.setFileSize(req.getFileSize());
         document.setStatus("INDEXING");
         document.setChunkCount(0);
@@ -193,8 +197,9 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
     }
 
     private void validateCreateDocument(AiKnowledgeDocumentEntity document) {
-        validateMdFileName(document.getName());
+        validateSupportedFileName(document.getName());
         validateDocumentObjectKey(document.getKnowledgeBaseCode(), document.getObjectKey());
+        validateChunkStrategy(document.getFileType(), document.getChunkStrategy());
         if (documentMapper.selectByCode(document.getKnowledgeBaseId(), document.getCode()) != null) {
             throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_CODE_EXISTS);
         }
@@ -203,9 +208,12 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
         }
     }
 
-    private void validateMdFileName(String fileName) {
-        if (StrUtil.isBlank(fileName) || !fileName.toLowerCase(Locale.ROOT).endsWith(".md")
-                || fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+    private void validateSupportedFileName(String fileName) {
+        if (StrUtil.isBlank(fileName) || fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_FILE_INVALID);
+        }
+        String fileType = resolveFileType(fileName);
+        if (!FILE_TYPES.contains(fileType)) {
             throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_FILE_INVALID);
         }
     }
@@ -213,8 +221,10 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
     private void validateDocumentObjectKey(String knowledgeBaseCode, String objectKey) {
         String prefix = documentObjectKeyPrefix(knowledgeBaseCode);
         if (StrUtil.isBlank(objectKey) || !objectKey.startsWith(prefix)
-                || !objectKey.toLowerCase(Locale.ROOT).endsWith(".md")
                 || objectKey.contains("..") || objectKey.contains("\\")) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_FILE_INVALID);
+        }
+        if (!FILE_TYPES.contains(resolveFileType(objectKey))) {
             throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_FILE_INVALID);
         }
     }
@@ -226,6 +236,35 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
 
     private String documentObjectKeyPrefix(String knowledgeBaseCode) {
         return "ai/knowledge/" + knowledgeBaseCode + "/documents/";
+    }
+
+    private String resolveFileType(String fileName) {
+        String lowerName = StrUtil.trim(fileName).toLowerCase(Locale.ROOT);
+        int dotIndex = lowerName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == lowerName.length() - 1) {
+            return "";
+        }
+        return lowerName.substring(dotIndex + 1);
+    }
+
+    private String resolveChunkStrategy(String fileType, String requestedStrategy) {
+        String strategy = StrUtil.trim(requestedStrategy);
+        if (StrUtil.isBlank(strategy)) {
+            return FILE_TYPE_JSON.equals(fileType) ? "NONE" : "MARKDOWN";
+        }
+        return strategy.toUpperCase(Locale.ROOT);
+    }
+
+    private void validateChunkStrategy(String fileType, String chunkStrategy) {
+        if (!CHUNK_STRATEGIES.contains(chunkStrategy)) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_FILE_INVALID);
+        }
+        if (FILE_TYPE_MD.equals(fileType) && "BY_ITEM".equals(chunkStrategy)) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_FILE_INVALID);
+        }
+        if (FILE_TYPE_JSON.equals(fileType) && "MARKDOWN".equals(chunkStrategy)) {
+            throw BusinessException.of(CommonErrorCode.KNOWLEDGE_DOCUMENT_FILE_INVALID);
+        }
     }
 
     private void submitIndexTask(Long knowledgeBaseId, Long documentId) {
@@ -313,6 +352,7 @@ public class AiKnowledgeDocumentServiceImpl implements AiKnowledgeDocumentServic
         result.setCode(document.getCode());
         result.setObjectKey(document.getObjectKey());
         result.setFileType(document.getFileType());
+        result.setChunkStrategy(document.getChunkStrategy());
         result.setFileSize(document.getFileSize());
         result.setFileSizeText(formatFileSize(document.getFileSize()));
         result.setStatus(document.getStatus());

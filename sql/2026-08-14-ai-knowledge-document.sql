@@ -1,6 +1,6 @@
 -- AI 知识库文档管理建表脚本。
 --
--- ai_knowledge_document 保存每个知识库下的 Markdown 文档入库状态。
+-- ai_knowledge_document 保存每个知识库下的知识文档入库状态。
 -- 删除文档采用物理删除，不保留 DELETED 状态。
 
 CREATE TABLE IF NOT EXISTS `ai_knowledge_document` (
@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS `ai_knowledge_document` (
   `name` varchar(200) NOT NULL COMMENT '文档名称',
   `code` varchar(64) NOT NULL COMMENT '文档编码，同一知识库内唯一',
   `object_key` varchar(500) NOT NULL COMMENT 'TOS对象Key',
-  `file_type` varchar(20) NOT NULL DEFAULT 'md' COMMENT '文件类型，第一版仅md',
+  `file_type` varchar(20) NOT NULL DEFAULT 'md' COMMENT '文件类型：md/json',
+  `chunk_strategy` varchar(20) NOT NULL DEFAULT 'MARKDOWN' COMMENT '切分策略：MARKDOWN按Markdown切分，NONE整体入库，BY_ITEM按JSON数组元素入库',
   `file_size` bigint DEFAULT NULL COMMENT '文件大小，单位字节',
   `status` varchar(20) NOT NULL DEFAULT 'INDEXING' COMMENT 'INDEXING 入库中，READY 已完成，FAILED 失败',
   `chunk_count` int NOT NULL DEFAULT '0' COMMENT '切分后chunk数量',

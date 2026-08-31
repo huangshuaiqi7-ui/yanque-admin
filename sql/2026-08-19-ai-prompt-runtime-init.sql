@@ -156,3 +156,47 @@ update prompt_template t
 join prompt_template_version v on v.template_id = t.id and v.version_no = 1
 set t.active_version_id = v.id
 where t.code = 'knowledge_qa_user' and t.active_version_id is null;
+
+insert into prompt_template(code, name, agent_code, prompt_type, scene_code, status, description, create_time, update_time)
+values('text_to_sql_intent_system', 'Text-to-SQL 意图识别系统提示词', 'text_to_sql_agent', 'SYSTEM', 'STRUCTURED_EXTRACT', 'ACTIVE',
+       'Text-to-SQL 入口节点使用的意图识别 system prompt。', now(), now())
+on duplicate key update code = code;
+insert into prompt_template_version(template_id, version_no, content, variables, change_note, create_by)
+select t.id, 1, '你是燕雀系统的 Text-to-SQL 意图识别助手。
+
+你的任务：
+判断用户问题是否应该进入 Text-to-SQL 数据查询流程。
+
+当前系统支持的业务范围：
+{business_domains}
+
+business_domain 必须返回上面业务范围里的稳定编码，例如 order、payment、student、teaching、learning、homework、exam、ai。
+
+分类枚举：
+1. DATA_QUERY：用户想查询已有业务数据，例如订单量、支付金额、课程报名人数、作业提交率、考试通过率等。
+2. GENERAL_CHAT：普通问答、系统能力询问、业务概念解释，不需要生成 SQL。
+3. DATA_OPERATION：新增、修改、删除、审批、导出全部数据等写操作或高风险操作。
+4. OUT_OF_SCOPE：问题超出当前系统业务范围，例如天气、股票、外部平台数据等。
+5. AMBIGUOUS：问题太短或信息不足，无法判断用户到底要查数据还是问规则。
+
+判断要求：
+1. 只有明确是在查已有业务数据时，才输出 DATA_QUERY。
+2. 只要涉及写入、修改、删除、审批、批量导出，就输出 DATA_OPERATION。
+3. 如果用户只是问某个业务词是什么意思，通常输出 GENERAL_CHAT。
+4. 如果用户问题不在业务范围内，输出 OUT_OF_SCOPE。
+5. 如果必须追问才能继续，输出 AMBIGUOUS，并给出 clarification_question。
+
+字段要求：
+1. intent：只能使用上面的五个枚举。
+2. reason：用一句中文说明为什么这样分类。
+3. business_domain：如果问题属于某个支持业务域，填写对应稳定编码；否则为空。这个字段后续会用于指标、业务说明和查询注意事项检索。
+4. normalized_question：保留用户原意，只清理多余空格和换行。
+5. clarification_question：只有 AMBIGUOUS 时填写；其他分类不要填写。',
+       json_object('business_domains', '当前 Text-to-SQL 支持的业务范围', 'business_domain', '模型识别出的业务域'), '初始化 Text-to-SQL 意图识别提示词', null
+from prompt_template t
+where t.code = 'text_to_sql_intent_system'
+  and not exists(select 1 from prompt_template_version v where v.template_id = t.id and v.version_no = 1);
+update prompt_template t
+join prompt_template_version v on v.template_id = t.id and v.version_no = 1
+set t.active_version_id = v.id
+where t.code = 'text_to_sql_intent_system' and t.active_version_id is null;

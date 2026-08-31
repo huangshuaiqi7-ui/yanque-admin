@@ -13,6 +13,7 @@ public class AiKnowledgeDocumentRes {
     private String code;
     private String objectKey;
     private String fileType;
+    private String chunkStrategy;
     private Long fileSize;
     private String fileSizeText;
     private String status;

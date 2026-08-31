@@ -9,6 +9,7 @@
         <result property="code" column="code"/>
         <result property="objectKey" column="object_key"/>
         <result property="fileType" column="file_type"/>
+        <result property="chunkStrategy" column="chunk_strategy"/>
         <result property="fileSize" column="file_size"/>
         <result property="status" column="status"/>
         <result property="chunkCount" column="chunk_count"/>
@@ -21,7 +22,7 @@
     </resultMap>
 
     <sql id="BaseColumns">
-        id, knowledge_base_id, knowledge_base_code, name, code, object_key, file_type, file_size,
+        id, knowledge_base_id, knowledge_base_code, name, code, object_key, file_type, chunk_strategy, file_size,
         status, chunk_count, version, last_error_message, created_by, updated_by, created_at, updated_at
     </sql>
 
@@ -70,11 +71,11 @@
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into ai_knowledge_document(
-            knowledge_base_id, knowledge_base_code, name, code, object_key, file_type, file_size,
+            knowledge_base_id, knowledge_base_code, name, code, object_key, file_type, chunk_strategy, file_size,
             status, chunk_count, version, last_error_message
         )
         values(
-            #{knowledgeBaseId}, #{knowledgeBaseCode}, #{name}, #{code}, #{objectKey}, #{fileType}, #{fileSize},
+            #{knowledgeBaseId}, #{knowledgeBaseCode}, #{name}, #{code}, #{objectKey}, #{fileType}, #{chunkStrategy}, #{fileSize},
             #{status}, #{chunkCount}, #{version}, #{lastErrorMessage}
         )
     </insert>

@@ -297,6 +297,8 @@ public class AiKnowledgePythonClient {
         request.put("document_version", document.getVersion());
         request.put("object_key", document.getObjectKey());
         request.put("download_url", downloadUrl);
+        request.put("file_type", document.getFileType());
+        request.put("chunk_strategy", document.getChunkStrategy());
         request.put("file_size", document.getFileSize());
         return request;
     }
