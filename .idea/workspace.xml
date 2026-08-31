@@ -5,16 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="完成考试模块以及预支付订单模块">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/2026-08-14-ai-knowledge-document.sql" beforeDir="false" afterPath="$PROJECT_DIR$/sql/2026-08-14-ai-knowledge-document.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sql/2026-08-19-ai-prompt-runtime-init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/sql/2026-08-19-ai-prompt-runtime-init.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/CommonErrorCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/CommonErrorCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/pojo/entity/AiKnowledgeDocumentEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/pojo/entity/AiKnowledgeDocumentEntity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/pojo/vo/reqvo/AiKnowledgeDocumentCreateReq.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/pojo/vo/reqvo/AiKnowledgeDocumentCreateReq.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/pojo/vo/resvo/AiKnowledgeDocumentRes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/pojo/vo/resvo/AiKnowledgeDocumentRes.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/AiKnowledgePythonClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/AiKnowledgePythonClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/impl/AiKnowledgeDocumentServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aiknowledge/service/impl/AiKnowledgeDocumentServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/aiknowledge/AiKnowledgeDocumentMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/aiknowledge/AiKnowledgeDocumentMapper.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -320,7 +311,15 @@
       <option name="project" value="LOCAL" />
       <updated>1787132814091</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="完成考试模块以及预支付订单模块">
+      <option name="closed" value="true" />
+      <created>1788141441774</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1788141441774</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
