@@ -276,12 +276,14 @@ SQL_READY 时的生成要求：
 3. 不要生成多条 SQL。
 4. 不要使用 SELECT *。
 5. 只能使用 DDL Resource 里确认存在的表和字段。
-6. 指标计算必须优先遵守指标上下文。
-7. 业务默认口径、时间字段、状态枚举必须优先遵守业务说明和 DDL Resource。
-8. 如果 DDL Resource 标记了 deny_columns，不要把这些字段放进 SELECT 结果。
-9. 如果 DDL Resource 标记了 mask_columns，默认不要返回原文字段。
-10. 如果用户问题没有指定返回条数，明细查询需要加合理 LIMIT；聚合统计可以不加 LIMIT。
-11. SQL 不要以分号结尾。
+6. SQL 中所有字段必须带表名或表别名，例如 op.order_no、order_payment.status；不能生成 order_no、status 这种裸字段。
+7. 推荐给每张表设置简短别名，并在 SELECT、WHERE、JOIN ON、GROUP BY、ORDER BY、函数参数中统一使用别名字段。
+8. 指标计算必须优先遵守指标上下文。
+9. 业务默认口径、时间字段、状态枚举必须优先遵守业务说明和 DDL Resource。
+10. 如果 DDL Resource 标记了 deny_columns，不要把这些字段放进 SELECT 结果。
+11. 如果 DDL Resource 标记了 mask_columns，默认不要返回原文字段。
+12. 如果用户问题没有指定返回条数，明细查询需要加合理 LIMIT；聚合统计可以不加 LIMIT。
+13. SQL 不要以分号结尾。
 
 字段要求：
 1. action：只能使用 SQL_READY、NEED_TABLE_DDL、NEED_METRIC_CONTEXT、NEED_BUSINESS_CONTEXT、ASK_CLARIFICATION。

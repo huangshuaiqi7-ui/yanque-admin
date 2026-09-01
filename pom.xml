@@ -107,6 +107,13 @@
       <version>5.8.23</version>
     </dependency>
 
+    <!-- JSQLParser：把模型生成的 SQL 解析成 AST，查询中心执行前做安全校验 -->
+    <dependency>
+      <groupId>com.github.jsqlparser</groupId>
+      <artifactId>jsqlparser</artifactId>
+      <version>4.6</version>
+    </dependency>
+
     <!-- MyBatis, 3.x 适配springboot3.x. -->
     <dependency>
       <groupId>org.mybatis.spring.boot</groupId>

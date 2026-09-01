@@ -5,7 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="完成考试模块以及预支付订单模块">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sql/2026-08-19-ai-prompt-runtime-init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/sql/2026-08-19-ai-prompt-runtime-init.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,32 +60,38 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.SysUserServiceImpl.executor&quot;: &quot;Run&quot;,
-    &quot;Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor&quot;: &quot;Run&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.YanQueApplication.executor&quot;: &quot;Debug&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/huangjin/IdeaProjects/YanQue14/YanQue-Admin&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.SysUserServiceImpl.executor": "Run",
+    "JUnit.TextToSqlPermissionCheckerTest.canUseRolesAliasAndNormalizeRoleCode.executor": "Debug",
+    "JUnit.TextToSqlPermissionCheckerTest.tablePermissionWithoutColumnPermissionFails.executor": "Debug",
+    "JUnit.TextToSqlPermissionIntegrationTest.advisorPermissionsCanBeLoadedAndCheckedFromDatabase.executor": "Debug",
+    "JUnit.TextToSqlQueryBizTest.permissionFailureDoesNotQueryDatabase.executor": "Debug",
+    "JUnit.TextToSqlQueryBizTest.validationFailureDoesNotQueryDatabase.executor": "Debug",
+    "JUnit.TextToSqlSqlValidatorTest.acceptsSafeSelect.executor": "Debug",
+    "Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.YanQueApplication.executor": "Debug",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/huangjin/IdeaProjects/YanQue14/YanQue-Admin",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
   </component>
@@ -92,15 +101,66 @@
     </key>
   </component>
   <component name="RunManager" selected="Spring Boot.YanQueApplication">
-    <configuration name="SysUserServiceImpl" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="cn.yanque.modules.users.service.impl.SysUserServiceImpl" />
+    <configuration name="TextToSqlPermissionCheckerTest.canUseRolesAliasAndNormalizeRoleCode" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="YanQue-Admin" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="cn.yanque.modules.users.service.impl.*" />
+          <option name="PATTERN" value="cn.yanque.modules.aitexttosql.service.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <option name="PACKAGE_NAME" value="cn.yanque.modules.aitexttosql.service" />
+      <option name="MAIN_CLASS_NAME" value="cn.yanque.modules.aitexttosql.service.TextToSqlPermissionCheckerTest" />
+      <option name="METHOD_NAME" value="canUseRolesAliasAndNormalizeRoleCode" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TextToSqlPermissionCheckerTest.tablePermissionWithoutColumnPermissionFails" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="YanQue-Admin" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="cn.yanque.modules.aitexttosql.service.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="cn.yanque.modules.aitexttosql.service" />
+      <option name="MAIN_CLASS_NAME" value="cn.yanque.modules.aitexttosql.service.TextToSqlPermissionCheckerTest" />
+      <option name="METHOD_NAME" value="tablePermissionWithoutColumnPermissionFails" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TextToSqlPermissionIntegrationTest.advisorPermissionsCanBeLoadedAndCheckedFromDatabase" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="YanQue-Admin" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="cn.yanque.modules.aitexttosql.service.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="cn.yanque.modules.aitexttosql.service" />
+      <option name="MAIN_CLASS_NAME" value="cn.yanque.modules.aitexttosql.service.TextToSqlPermissionIntegrationTest" />
+      <option name="METHOD_NAME" value="advisorPermissionsCanBeLoadedAndCheckedFromDatabase" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TextToSqlQueryBizTest.validationFailureDoesNotQueryDatabase" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="YanQue-Admin" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="cn.yanque.modules.aitexttosql.biz.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="cn.yanque.modules.aitexttosql.biz" />
+      <option name="MAIN_CLASS_NAME" value="cn.yanque.modules.aitexttosql.biz.TextToSqlQueryBizTest" />
+      <option name="METHOD_NAME" value="validationFailureDoesNotQueryDatabase" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -120,16 +180,19 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Application.SysUserServiceImpl" />
+      <item itemvalue="JUnit.TextToSqlPermissionCheckerTest.canUseRolesAliasAndNormalizeRoleCode" />
+      <item itemvalue="JUnit.TextToSqlPermissionCheckerTest.tablePermissionWithoutColumnPermissionFails" />
+      <item itemvalue="JUnit.TextToSqlPermissionIntegrationTest.advisorPermissionsCanBeLoadedAndCheckedFromDatabase" />
+      <item itemvalue="JUnit.TextToSqlQueryBizTest.validationFailureDoesNotQueryDatabase" />
       <item itemvalue="Spring Boot.YanQueApplication" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Spring Boot.YanQueApplication" />
-        <item itemvalue="Application.SysUserServiceImpl" />
-        <item itemvalue="Spring Boot.YanQueApplication" />
-        <item itemvalue="Application.SysUserServiceImpl" />
-        <item itemvalue="Spring Boot.YanQueApplication" />
+        <item itemvalue="JUnit.TextToSqlPermissionIntegrationTest.advisorPermissionsCanBeLoadedAndCheckedFromDatabase" />
+        <item itemvalue="JUnit.TextToSqlPermissionCheckerTest.canUseRolesAliasAndNormalizeRoleCode" />
+        <item itemvalue="JUnit.TextToSqlPermissionCheckerTest.tablePermissionWithoutColumnPermissionFails" />
+        <item itemvalue="JUnit.TextToSqlQueryBizTest.validationFailureDoesNotQueryDatabase" />
       </list>
     </recent_temporary>
   </component>
@@ -319,7 +382,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788141441774</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="完成考试模块以及预支付订单模块">
+      <option name="closed" value="true" />
+      <created>1788165538381</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1788165538381</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -362,6 +433,36 @@
             <option name="WATCH_EXIT" value="false" />
           </properties>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionChecker.java</url>
+          <line>48</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionChecker.java</url>
+          <line>112</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/biz/TextToSqlQueryBiz.java</url>
+          <line>45</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlExplainChecker.java</url>
+          <line>37</line>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/biz/TextToSqlQueryBiz.java</url>
+          <line>59</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/ApiResponse.java</url>
+          <line>60</line>
+          <option name="timeStamp" value="18" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
