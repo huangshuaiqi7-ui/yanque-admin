@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
@@ -82,6 +83,11 @@ public class TextToSqlSqlValidator {
             SqlValidationResult qualifiedColumnResult = validateColumnQualifier(select, usedTables);
             if (!qualifiedColumnResult.isValid()) {
                 return qualifiedColumnResult;
+            }
+
+            SqlValidationResult derivedColumnResult = validateDerivedColumns(select, usedTables);
+            if (!derivedColumnResult.isValid()) {
+                return derivedColumnResult;
             }
 
             // 字段会出现在 SELECT、WHERE、GROUP BY、ORDER BY、JOIN ON、函数参数等地方。
@@ -308,6 +314,24 @@ public class TextToSqlSqlValidator {
     }
 
     /**
+     * 校验派生表字段。
+     *
+     * 例如 FROM (...) t 之后，外层可以使用 t.stat_date，
+     * 但 stat_date 必须是子查询 SELECT 出来的字段或别名。
+     */
+    private SqlValidationResult validateDerivedColumns(Select select, List<String> usedTables) {
+        List<String> unknownColumns = getUnknownDerivedColumns(select.getSelectBody());
+        if (unknownColumns.isEmpty()) {
+            return SqlValidationResult.success("", usedTables, Map.of());
+        }
+        SqlValidationResult result = SqlValidationResult.fail(
+                "SQL使用了派生表未输出的字段：" + String.join("、", unknownColumns) + "。"
+        );
+        result.setUsedTables(usedTables);
+        return result;
+    }
+
+    /**
      * 检查 SELECT 返回项里有没有 *。
      *
      * PlainSelect 表示普通 SELECT。
@@ -351,10 +375,11 @@ public class TextToSqlSqlValidator {
     private Map<String, List<String>> getSelectedColumnMap(SelectBody selectBody) {
         Map<String, List<String>> columnMap = new LinkedHashMap<>();
         if (selectBody instanceof PlainSelect plainSelect) {
-            Map<String, String> tableAliases = readTableAliases(selectBody);
+            collectSubSelectColumnMap(plainSelect, columnMap);
+            SelectScope scope = buildSelectScope(plainSelect);
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
                 if (selectItem instanceof SelectExpressionItem expressionItem) {
-                    collectColumnMap(expressionItem.getExpression(), columnMap, tableAliases);
+                    collectColumnMap(expressionItem.getExpression(), columnMap, scope);
                 }
             }
         } else if (selectBody instanceof SetOperationList setOperationList) {
@@ -366,32 +391,39 @@ public class TextToSqlSqlValidator {
     }
 
     private void collectColumnMap(SelectBody selectBody, Map<String, List<String>> columnMap) {
-        Map<String, String> tableAliases = readTableAliases(selectBody);
-        ExpressionDeParser expressionVisitor = buildColumnMapVisitor(columnMap, tableAliases);
-        StringBuilder buffer = new StringBuilder();
-        SelectDeParser selectVisitor = new SelectDeParser(expressionVisitor, buffer);
-        expressionVisitor.setSelectVisitor(selectVisitor);
-        expressionVisitor.setBuffer(buffer);
-        selectBody.accept(selectVisitor);
+        if (selectBody instanceof PlainSelect plainSelect) {
+            collectSubSelectColumnMap(plainSelect, columnMap);
+            SelectScope scope = buildSelectScope(plainSelect);
+            ExpressionDeParser expressionVisitor = buildColumnMapVisitor(columnMap, scope);
+            StringBuilder buffer = new StringBuilder();
+            SelectDeParser selectVisitor = new SelectDeParser(expressionVisitor, buffer);
+            expressionVisitor.setSelectVisitor(selectVisitor);
+            expressionVisitor.setBuffer(buffer);
+            selectBody.accept(selectVisitor);
+        } else if (selectBody instanceof SetOperationList setOperationList) {
+            for (SelectBody child : setOperationList.getSelects()) {
+                collectColumnMap(child, columnMap);
+            }
+        }
     }
 
     private void collectColumnMap(
             Expression expression,
             Map<String, List<String>> columnMap,
-            Map<String, String> tableAliases
+            SelectScope scope
     ) {
-        expression.accept(buildColumnMapVisitor(columnMap, tableAliases));
+        expression.accept(buildColumnMapVisitor(columnMap, scope));
     }
 
     private ExpressionDeParser buildColumnMapVisitor(
             Map<String, List<String>> columnMap,
-            Map<String, String> tableAliases
+            SelectScope scope
     ) {
         return new ExpressionDeParser() {
             @Override
             public void visit(Column column) {
                 String columnName = cleanSqlName(column.getColumnName());
-                String tableName = resolveTableName(column, tableAliases);
+                String tableName = resolveTableName(column, scope);
                 if (StringUtils.hasText(tableName) && StringUtils.hasText(columnName) && !"*".equals(columnName)) {
                     addColumnToMap(columnMap, tableName, columnName);
                 }
@@ -400,29 +432,148 @@ public class TextToSqlSqlValidator {
         };
     }
 
+    private void collectSubSelectColumnMap(PlainSelect plainSelect, Map<String, List<String>> columnMap) {
+        collectSubSelectColumnMap(plainSelect.getFromItem(), columnMap);
+        if (plainSelect.getJoins() == null) {
+            return;
+        }
+        for (Join join : plainSelect.getJoins()) {
+            collectSubSelectColumnMap(join.getRightItem(), columnMap);
+        }
+    }
+
+    private void collectSubSelectColumnMap(FromItem fromItem, Map<String, List<String>> columnMap) {
+        if (fromItem instanceof SubSelect subSelect) {
+            collectColumnMap(subSelect.getSelectBody(), columnMap);
+        }
+    }
+
+    private List<String> getUnknownDerivedColumns(SelectBody selectBody) {
+        List<String> result = new ArrayList<>();
+        collectUnknownDerivedColumns(selectBody, result);
+        return unique(result);
+    }
+
+    private void collectUnknownDerivedColumns(SelectBody selectBody, List<String> result) {
+        if (selectBody instanceof PlainSelect plainSelect) {
+            collectSubSelectUnknownDerivedColumns(plainSelect, result);
+            SelectScope scope = buildSelectScope(plainSelect);
+            collectUnknownDerivedColumnsInCurrentSelect(plainSelect, scope, result);
+        } else if (selectBody instanceof SetOperationList setOperationList) {
+            for (SelectBody child : setOperationList.getSelects()) {
+                collectUnknownDerivedColumns(child, result);
+            }
+        }
+    }
+
+    private void collectSubSelectUnknownDerivedColumns(PlainSelect plainSelect, List<String> result) {
+        collectSubSelectUnknownDerivedColumns(plainSelect.getFromItem(), result);
+        if (plainSelect.getJoins() == null) {
+            return;
+        }
+        for (Join join : plainSelect.getJoins()) {
+            collectSubSelectUnknownDerivedColumns(join.getRightItem(), result);
+        }
+    }
+
+    private void collectSubSelectUnknownDerivedColumns(FromItem fromItem, List<String> result) {
+        if (fromItem instanceof SubSelect subSelect) {
+            collectUnknownDerivedColumns(subSelect.getSelectBody(), result);
+        }
+    }
+
+    private void collectUnknownDerivedColumnsInCurrentSelect(
+            PlainSelect plainSelect,
+            SelectScope scope,
+            List<String> result
+    ) {
+        ExpressionDeParser visitor = buildUnknownDerivedColumnVisitor(scope, result);
+        for (SelectItem selectItem : plainSelect.getSelectItems()) {
+            if (selectItem instanceof SelectExpressionItem expressionItem) {
+                visitExpression(expressionItem.getExpression(), visitor);
+            }
+        }
+        visitExpression(plainSelect.getWhere(), visitor);
+        visitExpression(plainSelect.getHaving(), visitor);
+        if (plainSelect.getGroupBy() != null && plainSelect.getGroupBy().getGroupByExpressions() != null) {
+            for (Expression expression : plainSelect.getGroupBy().getGroupByExpressions()) {
+                visitExpression(expression, visitor);
+            }
+        }
+        if (plainSelect.getOrderByElements() != null) {
+            for (var orderByElement : plainSelect.getOrderByElements()) {
+                visitExpression(orderByElement.getExpression(), visitor);
+            }
+        }
+        if (plainSelect.getJoins() == null) {
+            return;
+        }
+        for (Join join : plainSelect.getJoins()) {
+            if (join.getOnExpressions() != null) {
+                for (Expression expression : join.getOnExpressions()) {
+                    visitExpression(expression, visitor);
+                }
+            }
+        }
+    }
+
+    private ExpressionDeParser buildUnknownDerivedColumnVisitor(SelectScope scope, List<String> result) {
+        return new ExpressionDeParser() {
+            @Override
+            public void visit(Column column) {
+                if (column.getTable() == null) {
+                    super.visit(column);
+                    return;
+                }
+                String tableName = cleanSqlName(column.getTable().getName());
+                String columnName = cleanSqlName(column.getColumnName());
+                if (scope.isDerivedTable(tableName) && !scope.isDerivedColumn(tableName, columnName)) {
+                    result.add(columnKey(tableName, columnName));
+                }
+                super.visit(column);
+            }
+        };
+    }
+
+    private void visitExpression(Expression expression, ExpressionDeParser visitor) {
+        if (expression != null) {
+            expression.accept(visitor);
+        }
+    }
+
     private List<String> getUnqualifiedColumns(SelectBody selectBody) {
         List<String> columns = new ArrayList<>();
-        collectUnqualifiedColumns(selectBody, columns);
+        collectUnqualifiedColumns(selectBody, columns, getSelectAliases(selectBody));
         return unique(columns);
     }
 
-    private void collectUnqualifiedColumns(SelectBody selectBody, List<String> columns) {
-        ExpressionDeParser expressionVisitor = buildUnqualifiedColumnVisitor(columns);
-        StringBuilder buffer = new StringBuilder();
-        SelectDeParser selectVisitor = new SelectDeParser(expressionVisitor, buffer);
-        expressionVisitor.setSelectVisitor(selectVisitor);
-        expressionVisitor.setBuffer(buffer);
-        selectBody.accept(selectVisitor);
+    private void collectUnqualifiedColumns(SelectBody selectBody, List<String> columns, Set<String> selectAliases) {
+        if (selectBody instanceof PlainSelect plainSelect) {
+            collectSubSelectUnqualifiedColumns(plainSelect, columns);
+            ExpressionDeParser expressionVisitor = buildUnqualifiedColumnVisitor(columns, selectAliases);
+            StringBuilder buffer = new StringBuilder();
+            SelectDeParser selectVisitor = new SelectDeParser(expressionVisitor, buffer);
+            expressionVisitor.setSelectVisitor(selectVisitor);
+            expressionVisitor.setBuffer(buffer);
+            selectBody.accept(selectVisitor);
+        } else if (selectBody instanceof SetOperationList setOperationList) {
+            for (SelectBody child : setOperationList.getSelects()) {
+                collectUnqualifiedColumns(child, columns, getSelectAliases(child));
+            }
+        }
     }
 
-    private ExpressionDeParser buildUnqualifiedColumnVisitor(List<String> columns) {
+    private ExpressionDeParser buildUnqualifiedColumnVisitor(List<String> columns, Set<String> selectAliases) {
         return new ExpressionDeParser() {
             @Override
             public void visit(Column column) {
                 String columnName = cleanSqlName(column.getColumnName());
                 boolean hasTableName = column.getTable() != null
                         && StringUtils.hasText(cleanSqlName(column.getTable().getName()));
-                if (StringUtils.hasText(columnName) && !"*".equals(columnName) && !hasTableName) {
+                if (StringUtils.hasText(columnName)
+                        && !"*".equals(columnName)
+                        && !hasTableName
+                        && !selectAliases.contains(columnName)) {
                     columns.add(columnName);
                 }
                 super.visit(column);
@@ -430,28 +581,42 @@ public class TextToSqlSqlValidator {
         };
     }
 
+    private void collectSubSelectUnqualifiedColumns(PlainSelect plainSelect, List<String> columns) {
+        collectSubSelectUnqualifiedColumns(plainSelect.getFromItem(), columns);
+        if (plainSelect.getJoins() == null) {
+            return;
+        }
+        for (Join join : plainSelect.getJoins()) {
+            collectSubSelectUnqualifiedColumns(join.getRightItem(), columns);
+        }
+    }
+
+    private void collectSubSelectUnqualifiedColumns(FromItem fromItem, List<String> columns) {
+        if (fromItem instanceof SubSelect subSelect) {
+            collectUnqualifiedColumns(subSelect.getSelectBody(), columns, getSelectAliases(subSelect.getSelectBody()));
+        }
+    }
+
     /**
-     * 读取 FROM / JOIN 中的表别名。
+     * SELECT 返回列别名可以出现在 ORDER BY 里，例如：
+     * select date(op.pay_success_time) as stat_date ... order by stat_date
      *
-     * 例如 order_payment op 会记录：
-     * - op -> order_payment
-     * - order_payment -> order_payment
+     * stat_date 不是表字段，不应该按“裸字段缺少表别名”拦截。
      */
-    private Map<String, String> readTableAliases(SelectBody selectBody) {
-        Map<String, String> result = new LinkedHashMap<>();
+    private Set<String> getSelectAliases(SelectBody selectBody) {
+        Set<String> aliases = new LinkedHashSet<>();
         if (selectBody instanceof PlainSelect plainSelect) {
-            addTableAlias(result, plainSelect.getFromItem());
-            if (plainSelect.getJoins() != null) {
-                for (Join join : plainSelect.getJoins()) {
-                    addTableAlias(result, join.getRightItem());
+            for (SelectItem selectItem : plainSelect.getSelectItems()) {
+                if (selectItem instanceof SelectExpressionItem expressionItem && expressionItem.getAlias() != null) {
+                    aliases.add(cleanSqlName(expressionItem.getAlias().getName()));
                 }
             }
         } else if (selectBody instanceof SetOperationList setOperationList) {
             for (SelectBody child : setOperationList.getSelects()) {
-                result.putAll(readTableAliases(child));
+                aliases.addAll(getSelectAliases(child));
             }
         }
-        return result;
+        return aliases;
     }
 
     private void addTableAlias(Map<String, String> tableAliases, FromItem fromItem) {
@@ -468,7 +633,60 @@ public class TextToSqlSqlValidator {
         }
     }
 
-    private String resolveTableName(Column column, Map<String, String> tableAliases) {
+    private SelectScope buildSelectScope(PlainSelect plainSelect) {
+        Map<String, String> tableAliases = new LinkedHashMap<>();
+        Map<String, Set<String>> derivedTableColumns = new LinkedHashMap<>();
+        addFromItemToScope(tableAliases, derivedTableColumns, plainSelect.getFromItem());
+        if (plainSelect.getJoins() != null) {
+            for (Join join : plainSelect.getJoins()) {
+                addFromItemToScope(tableAliases, derivedTableColumns, join.getRightItem());
+            }
+        }
+        return new SelectScope(tableAliases, derivedTableColumns);
+    }
+
+    private void addFromItemToScope(
+            Map<String, String> tableAliases,
+            Map<String, Set<String>> derivedTableColumns,
+            FromItem fromItem
+    ) {
+        addTableAlias(tableAliases, fromItem);
+        addDerivedTableAlias(derivedTableColumns, fromItem);
+    }
+
+    private void addDerivedTableAlias(Map<String, Set<String>> derivedTableColumns, FromItem fromItem) {
+        if (!(fromItem instanceof SubSelect subSelect) || subSelect.getAlias() == null) {
+            return;
+        }
+        String alias = cleanSqlName(subSelect.getAlias().getName());
+        if (!StringUtils.hasText(alias)) {
+            return;
+        }
+        derivedTableColumns.put(alias, getSelectOutputNames(subSelect.getSelectBody()));
+    }
+
+    private Set<String> getSelectOutputNames(SelectBody selectBody) {
+        Set<String> outputNames = new LinkedHashSet<>();
+        if (selectBody instanceof PlainSelect plainSelect) {
+            for (SelectItem selectItem : plainSelect.getSelectItems()) {
+                if (!(selectItem instanceof SelectExpressionItem expressionItem)) {
+                    continue;
+                }
+                if (expressionItem.getAlias() != null) {
+                    outputNames.add(cleanSqlName(expressionItem.getAlias().getName()));
+                } else if (expressionItem.getExpression() instanceof Column column) {
+                    outputNames.add(cleanSqlName(column.getColumnName()));
+                }
+            }
+        } else if (selectBody instanceof SetOperationList setOperationList) {
+            for (SelectBody child : setOperationList.getSelects()) {
+                outputNames.addAll(getSelectOutputNames(child));
+            }
+        }
+        return outputNames;
+    }
+
+    private String resolveTableName(Column column, SelectScope scope) {
         if (column.getTable() == null) {
             return "";
         }
@@ -476,8 +694,11 @@ public class TextToSqlSqlValidator {
         if (!StringUtils.hasText(tableName)) {
             return "";
         }
-        String realTableName = tableAliases.get(tableName);
-        return StringUtils.hasText(realTableName) ? realTableName : tableName;
+        if (scope.isDerivedColumn(tableName, cleanSqlName(column.getColumnName()))) {
+            return "";
+        }
+        String realTableName = scope.tableAliases().get(tableName);
+        return StringUtils.hasText(realTableName) ? realTableName : "";
     }
 
     private void addColumnToMap(Map<String, List<String>> columnMap, String tableName, String columnName) {
@@ -573,6 +794,23 @@ public class TextToSqlSqlValidator {
      * 单个字段的查询策略。
      */
     private record ColumnPolicy(String tableName, String columnName, String queryPolicy) {
+    }
+
+    /**
+     * 一个 SELECT 的当前作用域。
+     *
+     * tableAliases：真实表别名，例如 op -> order_payment。
+     * derivedTableColumns：派生表输出列，例如 t -> [stat_date, daily_order_count]。
+     */
+    private record SelectScope(Map<String, String> tableAliases, Map<String, Set<String>> derivedTableColumns) {
+        boolean isDerivedTable(String tableAlias) {
+            return derivedTableColumns.containsKey(tableAlias);
+        }
+
+        boolean isDerivedColumn(String tableAlias, String columnName) {
+            Set<String> columns = derivedTableColumns.get(tableAlias);
+            return columns != null && columns.contains(columnName);
+        }
     }
 
     /**

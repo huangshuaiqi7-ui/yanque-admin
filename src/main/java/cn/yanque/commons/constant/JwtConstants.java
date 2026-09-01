@@ -15,6 +15,7 @@ public final class JwtConstants {
     public static final String SIGN_NONCE_HEADER = "X-Nonce";
     public static final String SIGN_HEADER = "X-Sign";
     public static final String SIGN_NONCE_KEY_PREFIX = "yanque:sign:nonce:";
+    public static final String JWT_SESSION_KEY_PREFIX = "yanque:jwt:sessions:";
     public static final String JWT_TOKEN_KEY_PREFIX = "yanque:jwt:token:";
     public static final String SIGN_SECRET_KEY_PREFIX = "yanque:sign:secret:";
     public static final String STUDENT_JWT_TOKEN_KEY_PREFIX = "yanque:student:jwt:token:";

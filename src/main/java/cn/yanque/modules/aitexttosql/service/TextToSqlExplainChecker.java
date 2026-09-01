@@ -54,11 +54,27 @@ public class TextToSqlExplainChecker {
 
     private SqlExplainPlanRow findNoIndexPlan(List<SqlExplainPlanRow> plans) {
         for (SqlExplainPlanRow plan : plans) {
-            if (!hasText(plan.getUsedKey())) {
+            if (shouldCheckIndex(plan) && !hasText(plan.getUsedKey())) {
                 return plan;
             }
         }
         return null;
+    }
+
+    /**
+     * 只对真实业务表要求使用索引。
+     *
+     * EXPLAIN 里 <derived2>、<derived3> 是 MySQL 物化出来的派生表，
+     * 它们不是数据库真实表，本身也没有业务索引，不能因为 key 为空就拦截。
+     */
+    private boolean shouldCheckIndex(SqlExplainPlanRow plan) {
+        String tableName = plan.getTableName();
+        if (!hasText(tableName)) {
+            return false;
+        }
+        return !tableName.startsWith("<derived")
+                && !tableName.startsWith("<subquery")
+                && !"<union>".equals(tableName);
     }
 
     private SqlExplainPlanRow toPlanRow(ResultSet resultSet) throws SQLException {

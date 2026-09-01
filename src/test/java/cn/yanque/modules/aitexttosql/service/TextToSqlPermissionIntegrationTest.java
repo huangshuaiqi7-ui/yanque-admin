@@ -73,7 +73,8 @@ class TextToSqlPermissionIntegrationTest {
                     {"name": "order_no", "query_policy": "ALLOW"},
                     {"name": "student_phone", "query_policy": "MASK"},
                     {"name": "unique_order_no", "query_policy": "DENY"},
-                    {"name": "status", "query_policy": "ALLOW"}
+                    {"name": "status", "query_policy": "ALLOW"},
+                    {"name": "pay_success_time", "query_policy": "ALLOW"}
                   ]
                 }
                 """;
@@ -112,5 +113,53 @@ class TextToSqlPermissionIntegrationTest {
                 ddl
         );
         assertFalse(denyResult.isValid(), "DENY 字段任何位置都不能使用。");
+
+        SqlValidationResult orderByAliasResult = sqlValidator.validate(
+                """
+                        select date(op.pay_success_time) as stat_date, count(distinct op.order_no) as order_count
+                        from order_payment op
+                        where op.status = 'SUCCESS'
+                          and op.pay_success_time >= '2026-06-01 00:00:00'
+                          and op.pay_success_time < '2026-07-01 00:00:00'
+                        group by date(op.pay_success_time)
+                        order by stat_date
+                        """,
+                ddl
+        );
+        assertTrue(orderByAliasResult.isValid(), orderByAliasResult.getReason());
+        assertTrue(orderByAliasResult.getUsedColumnMap().get("order_payment").contains("pay_success_time"));
+
+        SqlValidationResult derivedTableResult = sqlValidator.validate(
+                """
+                        SELECT t.stat_date,
+                               t.daily_order_count,
+                               ROUND(t.daily_order_count * 100.0 / m.total_order_count, 2) AS daily_ratio_pct
+                        FROM (
+                            SELECT DATE(op.pay_success_time) AS stat_date,
+                                   COUNT(DISTINCT op.order_no) AS daily_order_count
+                            FROM order_payment op
+                            WHERE op.status = 'SUCCESS'
+                              AND op.pay_success_time >= '2026-06-01 00:00:00'
+                              AND op.pay_success_time < '2026-07-01 00:00:00'
+                            GROUP BY DATE(op.pay_success_time)
+                        ) t
+                        CROSS JOIN (
+                            SELECT COUNT(DISTINCT op.order_no) AS total_order_count
+                            FROM order_payment op
+                            WHERE op.status = 'SUCCESS'
+                              AND op.pay_success_time >= '2026-06-01 00:00:00'
+                              AND op.pay_success_time < '2026-07-01 00:00:00'
+                        ) m
+                        ORDER BY t.stat_date
+                        """,
+                ddl
+        );
+        assertTrue(derivedTableResult.isValid(), derivedTableResult.getReason());
+        assertTrue(derivedTableResult.getUsedColumnMap().containsKey("order_payment"));
+        assertFalse(derivedTableResult.getUsedColumnMap().containsKey("t"));
+        assertFalse(derivedTableResult.getUsedColumnMap().containsKey("m"));
+        assertTrue(derivedTableResult.getUsedColumnMap().get("order_payment").contains("order_no"));
+        assertTrue(derivedTableResult.getUsedColumnMap().get("order_payment").contains("status"));
+        assertTrue(derivedTableResult.getUsedColumnMap().get("order_payment").contains("pay_success_time"));
     }
 }

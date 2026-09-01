@@ -52,16 +52,23 @@ public class TokenInterceptor implements HandlerInterceptor {
 
         // 获取当前用户 id
         Long userId = getLongClaim(jwt, JwtConstants.JWT_CLAIM_USER_ID);
-        // 获取redis当中的token
+        String sessionId = getStringClaim(jwt, JwtConstants.JWT_CLAIM_ID);
+        // 多端登录时，每一次登录都有自己的 jti，会话集合里存在这个 jti 才算登录态有效。
         String tokenKeyPrefix = studentRequest ? JwtConstants.STUDENT_JWT_TOKEN_KEY_PREFIX
                 : JwtConstants.JWT_TOKEN_KEY_PREFIX;
-        String redisToken = redisUtils.get(tokenKeyPrefix + userId);
+        String redisTokenKey = studentRequest ? tokenKeyPrefix + userId : tokenKeyPrefix + userId + ":" + sessionId;
+        String redisToken = redisUtils.get(redisTokenKey);
         if (StrUtil.isBlank(redisToken) || !token.equals(redisToken)) {
+            throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
+        }
+        if (!studentRequest
+                && !Boolean.TRUE.equals(redisUtils.isSetMember(JwtConstants.JWT_SESSION_KEY_PREFIX + userId, sessionId))) {
             throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
         }
 
         // 存入ThreadLocal
         UserContext.setUserId(userId);
+        UserContext.setSessionId(sessionId);
         return true;
     }
 
@@ -107,5 +114,13 @@ public class TokenInterceptor implements HandlerInterceptor {
         } catch (Exception exception) {
             throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
         }
+    }
+
+    private String getStringClaim(JWT jwt, String claimName) {
+        Object claimValue = jwt.getPayload(claimName);
+        if (claimValue == null || StrUtil.isBlank(claimValue.toString())) {
+            throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
+        }
+        return claimValue.toString();
     }
 }

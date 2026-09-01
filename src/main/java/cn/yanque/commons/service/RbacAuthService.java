@@ -8,7 +8,9 @@ import cn.yanque.modules.roles.mapper.SysRoleMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 用户角色和权限的查询、缓存及缓存失效服务。
@@ -60,12 +62,32 @@ public class RbacAuthService {
      * 删除用户登录会话和授权缓存，使旧 Token 立即失效。
      */
     public void invalidateLogin(Long userId) {
+        String sessionKey = JwtConstants.JWT_SESSION_KEY_PREFIX + userId;
+        Set<String> sessionIds = redisUtils.setMembers(sessionKey);
+        List<String> keys = new ArrayList<>();
+        keys.add(sessionKey);
+        keys.add(JwtConstants.JWT_TOKEN_KEY_PREFIX + userId);
+        keys.add(JwtConstants.SIGN_SECRET_KEY_PREFIX + userId);
+        keys.add(roleKey(userId));
+        keys.add(permissionKey(userId));
+        if (sessionIds != null) {
+            for (String sessionId : sessionIds) {
+                keys.add(JwtConstants.JWT_TOKEN_KEY_PREFIX + userId + ":" + sessionId);
+                keys.add(JwtConstants.SIGN_SECRET_KEY_PREFIX + userId + ":" + sessionId);
+            }
+        }
+        redisUtils.delete(keys);
+    }
+
+    /**
+     * 只删除当前登录端。多端登录时，用户在一个浏览器退出不影响其它设备。
+     */
+    public void invalidateSession(Long userId, String sessionId) {
         redisUtils.delete(List.of(
-                JwtConstants.JWT_TOKEN_KEY_PREFIX + userId,
-                JwtConstants.SIGN_SECRET_KEY_PREFIX + userId,
-                roleKey(userId),
-                permissionKey(userId)
+                JwtConstants.JWT_TOKEN_KEY_PREFIX + userId + ":" + sessionId,
+                JwtConstants.SIGN_SECRET_KEY_PREFIX + userId + ":" + sessionId
         ));
+        redisUtils.removeFromSet(JwtConstants.JWT_SESSION_KEY_PREFIX + userId, sessionId);
     }
 
     public void evictUsers(Collection<Long> userIds) {

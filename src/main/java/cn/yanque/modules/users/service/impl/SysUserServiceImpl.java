@@ -35,6 +35,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @ClassName SysUserServiceImpl
@@ -87,13 +88,19 @@ public class SysUserServiceImpl implements SysUserService {
         }
 
         //  (6) 生成token, 存redis
-        String token = this.createToken(sysUserEntity);
+        String sessionId = IdUtil.simpleUUID();
+        String token = this.createToken(sysUserEntity, sessionId);
         String signSecret = this.createSign();
 
-        // (7) 存入redis 中.
+        // (7) 存入redis 中. 后台支持多端登录，所以一个用户会有多个 jti 会话。
         String userId = String.valueOf(sysUserEntity.getId());
-        redisUtils.set(JwtConstants.JWT_TOKEN_KEY_PREFIX + userId, token, JwtConstants.LOGIN_TOKEN_TTL);
-        redisUtils.set(JwtConstants.SIGN_SECRET_KEY_PREFIX + userId, signSecret, JwtConstants.LOGIN_TOKEN_TTL);
+        String sessionKey = JwtConstants.JWT_SESSION_KEY_PREFIX + userId;
+        Set<String> oldSessions = redisUtils.setMembers(sessionKey);
+        clearExpiredSessions(userId, sessionKey, oldSessions);
+        redisUtils.addToSet(sessionKey, sessionId);
+        redisUtils.expire(sessionKey, JwtConstants.LOGIN_TOKEN_TTL);
+        redisUtils.set(JwtConstants.JWT_TOKEN_KEY_PREFIX + userId + ":" + sessionId, token, JwtConstants.LOGIN_TOKEN_TTL);
+        redisUtils.set(JwtConstants.SIGN_SECRET_KEY_PREFIX + userId + ":" + sessionId, signSecret, JwtConstants.LOGIN_TOKEN_TTL);
 
         // (8) 拼接返回结果.
         LoginRes loginRes = new LoginRes();
@@ -109,7 +116,11 @@ public class SysUserServiceImpl implements SysUserService {
         if (userId == null) {
             throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
         }
-        rbacAuthService.invalidateLogin(userId);
+        String sessionId = UserContext.getSessionId();
+        if (StrUtil.isBlank(sessionId)) {
+            throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
+        }
+        rbacAuthService.invalidateSession(userId, sessionId);
     }
 
     @Override
@@ -220,15 +231,27 @@ public class SysUserServiceImpl implements SysUserService {
         return result;
     }
 
+    private void clearExpiredSessions(String userId, String sessionKey, Set<String> oldSessions) {
+        if (oldSessions == null || oldSessions.isEmpty()) {
+            return;
+        }
+        for (String oldSessionId : oldSessions) {
+            String tokenKey = JwtConstants.JWT_TOKEN_KEY_PREFIX + userId + ":" + oldSessionId;
+            String secretKey = JwtConstants.SIGN_SECRET_KEY_PREFIX + userId + ":" + oldSessionId;
+            if (StrUtil.isBlank(redisUtils.get(tokenKey)) || StrUtil.isBlank(redisUtils.get(secretKey))) {
+                redisUtils.removeFromSet(sessionKey, oldSessionId);
+            }
+        }
+    }
+
 
     //创建一个生成token方法
-    private String createToken(SysUserEntity sysUserEntity) {
-        String jti = IdUtil.simpleUUID();
+    private String createToken(SysUserEntity sysUserEntity, String sessionId) {
         Map<String, Object> map = new HashMap<>();
         map.put(JwtConstants.JWT_CLAIM_USER_ID, sysUserEntity.getId());
         map.put(JwtConstants.JWT_CLAIM_EXPIRE_TIME,
                 System.currentTimeMillis() + JwtConstants.LOGIN_TOKEN_TTL.toMillis());
-        map.put(JwtConstants.JWT_CLAIM_ID, jti);// jti: token的一个短名字.
+        map.put(JwtConstants.JWT_CLAIM_ID, sessionId);// jti: token的一个短名字.
 
         //使用hutool工具类, 生成token
         return JWTUtil.createToken(map, JwtConstants.JWT_SECRET.getBytes(StandardCharsets.UTF_8));

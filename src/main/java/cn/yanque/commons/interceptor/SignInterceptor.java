@@ -66,14 +66,19 @@ public class SignInterceptor implements HandlerInterceptor {
         if (userId == null) {
             throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
         }
+        boolean studentRequest = request.getServletPath().startsWith("/student/");
+        String sessionId = UserContext.getSessionId();
+        if (!studentRequest && StrUtil.isBlank(sessionId)) {
+            throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
+        }
 
         // 5:nonce 保存至“请求时间戳 + 五分钟”，SETNX 失败说明请求已经执行过。
         long nonceExpireTime = timestamp + validMillis;
         Duration nonceTtl = Duration.ofMillis(Math.max(1L, nonceExpireTime - now));
-        boolean studentRequest = request.getServletPath().startsWith("/student/");
         String noncePrefix = studentRequest ? JwtConstants.STUDENT_SIGN_NONCE_KEY_PREFIX
                 : JwtConstants.SIGN_NONCE_KEY_PREFIX;
-        String nonceKey = noncePrefix + userId + ":" + nonce;
+        String nonceKey = studentRequest ? noncePrefix + userId + ":" + nonce
+                : noncePrefix + userId + ":" + sessionId + ":" + nonce;
         if (!Boolean.TRUE.equals(redisUtils.setIfAbsent(nonceKey, "1", nonceTtl))) {
             throw BusinessException.of(CommonErrorCode.SIGN_NONCE_REPEATED);
         }
@@ -81,7 +86,8 @@ public class SignInterceptor implements HandlerInterceptor {
         // 6: 获取用户对应的签名密钥
         String secretPrefix = studentRequest ? JwtConstants.STUDENT_SIGN_SECRET_KEY_PREFIX
                 : JwtConstants.SIGN_SECRET_KEY_PREFIX;
-        String signSecret = redisUtils.get(secretPrefix + userId);
+        String secretKey = studentRequest ? secretPrefix + userId : secretPrefix + userId + ":" + sessionId;
+        String signSecret = redisUtils.get(secretKey);
         if (StrUtil.isBlank(signSecret)) {
             throw BusinessException.of(CommonErrorCode.SIGN_SECRET_NOT_FOUND);
         }

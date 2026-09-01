@@ -6,6 +6,7 @@ package cn.yanque.commons.context;
 public final class UserContext {
 
     private static final ThreadLocal<Long> USER_ID_HOLDER = new ThreadLocal<>();
+    private static final ThreadLocal<String> SESSION_ID_HOLDER = new ThreadLocal<>();
 
     private UserContext() {
     }
@@ -14,11 +15,20 @@ public final class UserContext {
         USER_ID_HOLDER.set(userId);
     }
 
+    public static void setSessionId(String sessionId) {
+        SESSION_ID_HOLDER.set(sessionId);
+    }
+
     public static Long getUserId() {
         return USER_ID_HOLDER.get();
     }
 
+    public static String getSessionId() {
+        return SESSION_ID_HOLDER.get();
+    }
+
     public static void clear() {
         USER_ID_HOLDER.remove();
+        SESSION_ID_HOLDER.remove();
     }
 }

@@ -4,11 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="完成考试模块以及预支付订单模块">
+    <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="feat:提交">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/2026-08-19-ai-prompt-runtime-init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/sql/2026-08-19-ai-prompt-runtime-init.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/YanQueApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/constant/JwtConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/constant/JwtConstants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/context/UserContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/context/UserContext.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/interceptor/SignInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/interceptor/SignInterceptor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/interceptor/TokenInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/interceptor/TokenInterceptor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/service/RbacAuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/service/RbacAuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/utils/RedisUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/utils/RedisUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlExplainChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlExplainChecker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlSqlValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlSqlValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/users/service/impl/SysUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/users/service/impl/SysUserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionIntegrationTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -390,7 +397,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788165538381</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="feat:提交">
+      <option name="closed" value="true" />
+      <created>1788242492169</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1788242492169</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -411,20 +426,12 @@
     <MESSAGE value="TOS上传以及作业管理模块" />
     <MESSAGE value="支付模块" />
     <MESSAGE value="完成考试模块以及预支付订单模块" />
-    <option name="LAST_COMMIT_MESSAGE" value="完成考试模块以及预支付订单模块" />
+    <MESSAGE value="feat:提交" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat:提交" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/users/service/SysUserService.java</url>
-          <line>15</line>
-          <properties class="cn.yanque.modules.users.service.SysUserService" method="logout">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/courses/service/SysCourseService.java</url>
           <line>24</line>
@@ -436,33 +443,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionChecker.java</url>
-          <line>48</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionChecker.java</url>
           <line>112</line>
           <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/biz/TextToSqlQueryBiz.java</url>
-          <line>45</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlExplainChecker.java</url>
-          <line>37</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/biz/TextToSqlQueryBiz.java</url>
-          <line>59</line>
-          <option name="timeStamp" value="17" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/commons/apires/ApiResponse.java</url>
-          <line>60</line>
-          <option name="timeStamp" value="18" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

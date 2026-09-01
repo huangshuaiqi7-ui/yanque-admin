@@ -68,6 +68,10 @@ public class RedisUtils{
         return stringRedisTemplate.opsForSet().isMember(key, value);
     }
 
+    public Long removeFromSet(String key, String... values) {
+        return stringRedisTemplate.opsForSet().remove(key, (Object[]) values);
+    }
+
     public Set<String> setMembers(String key) {
         return stringRedisTemplate.opsForSet().members(key);
     }
