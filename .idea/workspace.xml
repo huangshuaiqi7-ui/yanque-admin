@@ -5,27 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="feat:提交">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/biz/TextToSqlQueryBiz.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/biz/TextToSqlQueryBiz.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/controller/TextToSqlEvalQuestionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/controller/TextToSqlEvalQuestionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/controller/TextToSqlPermissionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/controller/TextToSqlPermissionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/mapper/TextToSqlEvalAssertionMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/mapper/TextToSqlEvalAssertionMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/mapper/TextToSqlEvalQuestionMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/mapper/TextToSqlEvalQuestionMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/mapper/TextToSqlPermissionMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/mapper/TextToSqlPermissionMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/mapper/TextToSqlRunMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/mapper/TextToSqlRunMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/resvo/SqlExecutionResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/resvo/SqlExecutionResult.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/resvo/SqlExplainResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/resvo/SqlExplainResult.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/resvo/SqlValidationResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/resvo/SqlValidationResult.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/resvo/TextToSqlPermissionCheckResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/resvo/TextToSqlPermissionCheckResult.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalQuestionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalQuestionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlExplainChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlExplainChecker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionChecker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPythonClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPythonClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlRunService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlRunService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlSqlExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlSqlExecutor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlSqlValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlSqlValidator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/aitexttosql/TextToSqlEvalQuestionMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/aitexttosql/TextToSqlEvalQuestionMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/entity/TextToSqlEvalAssertionEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/entity/TextToSqlEvalAssertionEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/entity/TextToSqlEvalQuestionEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/entity/TextToSqlEvalQuestionEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/reqvo/TextToSqlEvalAssertionReq.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/reqvo/TextToSqlEvalAssertionReq.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/reqvo/TextToSqlEvalTaskCreateReq.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/pojo/vo/reqvo/TextToSqlEvalTaskCreateReq.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -431,7 +414,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788318077351</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="feat:提交">
+      <option name="closed" value="true" />
+      <created>1788334683539</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1788334683539</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -471,6 +462,46 @@
           <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionChecker.java</url>
           <line>123</line>
           <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalTaskService.java</url>
+          <line>230</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalTaskService.java</url>
+          <line>258</line>
+          <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalTaskService.java</url>
+          <line>282</line>
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalTaskService.java</url>
+          <line>323</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalTaskService.java</url>
+          <line>355</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalTaskService.java</url>
+          <line>376</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalTaskService.java</url>
+          <line>346</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlEvalTaskService.java</url>
+          <line>195</line>
+          <option name="timeStamp" value="40" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
