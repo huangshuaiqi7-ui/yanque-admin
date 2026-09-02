@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aitexttosql.mapper.TextToSqlEvalQuestionMapper">
+    <resultMap id="QuestionMap" type="cn.yanque.modules.aitexttosql.pojo.entity.TextToSqlEvalQuestionEntity">
+        <id property="id" column="id"/>
+        <result property="question" column="question"/>
+        <result property="businessDomain" column="business_domain"/>
+        <result property="evalTarget" column="eval_target"/>
+        <result property="sampleCategory" column="sample_category"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="sourceRunId" column="source_run_id"/>
+        <result property="judgeNote" column="judge_note"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="assertionCount" column="assertion_count"/>
+    </resultMap>
+
+    <sql id="QuestionColumns">
+        q.*,
+        (
+            select count(1)
+            from ai_text_to_sql_eval_assertion a
+            where a.eval_question_id = q.id
+        ) as assertion_count
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into ai_text_to_sql_eval_question(
+            question, business_domain, eval_target, sample_category, source_type, source_run_id,
+            judge_note, remark, status, created_by, created_at, updated_at
+        ) values (
+            #{question}, #{businessDomain}, #{evalTarget}, #{sampleCategory}, #{sourceType}, #{sourceRunId},
+            #{judgeNote}, #{remark}, #{status}, #{createdBy}, now(), now()
+        )
+    </insert>
+
+    <update id="updateById">
+        update ai_text_to_sql_eval_question
+        set question = #{question},
+            business_domain = #{businessDomain},
+            eval_target = #{evalTarget},
+            sample_category = #{sampleCategory},
+            judge_note = #{judgeNote},
+            remark = #{remark},
+            status = #{status},
+            updated_at = now()
+        where id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="QuestionMap">
+        select <include refid="QuestionColumns"/>
+        from ai_text_to_sql_eval_question q
+        where q.id = #{id}
+    </select>
+
+    <select id="selectBySourceRunId" resultMap="QuestionMap">
+        select <include refid="QuestionColumns"/>
+        from ai_text_to_sql_eval_question q
+        where q.source_run_id = #{sourceRunId}
+    </select>
+
+    <select id="selectPage" resultMap="QuestionMap">
+        select <include refid="QuestionColumns"/>
+        from ai_text_to_sql_eval_question q
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (
+                    q.question like concat('%', #{keyword}, '%')
+                    or q.judge_note like concat('%', #{keyword}, '%')
+                    or q.remark like concat('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="businessDomain != null and businessDomain != ''">
+                and q.business_domain = #{businessDomain}
+            </if>
+            <if test="evalTarget != null and evalTarget != ''">
+                and q.eval_target = #{evalTarget}
+            </if>
+            <if test="sampleCategory != null and sampleCategory != ''">
+                and q.sample_category = #{sampleCategory}
+            </if>
+            <if test="sourceType != null and sourceType != ''">
+                and q.source_type = #{sourceType}
+            </if>
+            <if test="status != null and status != ''">
+                and q.status = #{status}
+            </if>
+        </where>
+        order by q.created_at desc, q.id desc
+    </select>
+</mapper>

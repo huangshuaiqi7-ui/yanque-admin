@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aitexttosql.mapper.TextToSqlEvalAssertionMapper">
+    <resultMap id="AssertionMap" type="cn.yanque.modules.aitexttosql.pojo.entity.TextToSqlEvalAssertionEntity">
+        <id property="id" column="id"/>
+        <result property="evalQuestionId" column="eval_question_id"/>
+        <result property="actualKey" column="actual_key"/>
+        <result property="operator" column="operator"/>
+        <result property="expectedValue" column="expected_value"/>
+        <result property="required" column="required"/>
+        <result property="weight" column="weight"/>
+        <result property="failureType" column="failure_type"/>
+        <result property="referenceAnswer" column="reference_answer"/>
+        <result property="keyPoints" column="key_points"/>
+        <result property="forbiddenPoints" column="forbidden_points"/>
+        <result property="minScore" column="min_score"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="remark" column="remark"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insertBatch">
+        insert into ai_text_to_sql_eval_assertion(
+            eval_question_id, actual_key, operator, expected_value, required, weight, failure_type,
+            reference_answer, key_points, forbidden_points, min_score, sort_order, remark, created_at, updated_at
+        ) values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.evalQuestionId}, #{item.actualKey}, #{item.operator}, #{item.expectedValue},
+                #{item.required}, #{item.weight}, #{item.failureType}, #{item.referenceAnswer},
+                #{item.keyPoints}, #{item.forbiddenPoints}, #{item.minScore}, #{item.sortOrder},
+                #{item.remark}, now(), now()
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByEvalQuestionId">
+        delete from ai_text_to_sql_eval_assertion where eval_question_id = #{evalQuestionId}
+    </delete>
+
+    <select id="selectByEvalQuestionId" resultMap="AssertionMap">
+        select *
+        from ai_text_to_sql_eval_assertion
+        where eval_question_id = #{evalQuestionId}
+        order by sort_order asc, id asc
+    </select>
+</mapper>

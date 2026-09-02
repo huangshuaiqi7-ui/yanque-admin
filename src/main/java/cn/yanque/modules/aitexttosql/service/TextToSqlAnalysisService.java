@@ -9,6 +9,7 @@ import com.alibaba.fastjson2.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Text-to-SQL 数据分析页业务服务。
@@ -17,10 +18,13 @@ import java.util.List;
 public class TextToSqlAnalysisService {
     private final SysRoleMapper roleMapper;
     private final TextToSqlPythonClient pythonClient;
+    private final TextToSqlRunService runService;
 
-    public TextToSqlAnalysisService(SysRoleMapper roleMapper, TextToSqlPythonClient pythonClient) {
+    public TextToSqlAnalysisService(SysRoleMapper roleMapper, TextToSqlPythonClient pythonClient,
+                                    TextToSqlRunService runService) {
         this.roleMapper = roleMapper;
         this.pythonClient = pythonClient;
+        this.runService = runService;
     }
 
     /**
@@ -33,7 +37,26 @@ public class TextToSqlAnalysisService {
         if (userId == null) {
             throw BusinessException.of(CommonErrorCode.TOKEN_INVALID);
         }
+        String conversationId = req.getConversationId();
+        if (conversationId == null || conversationId.isBlank()) {
+            conversationId = UUID.randomUUID().toString();
+            req.setConversationId(conversationId);
+        }
+        Long runId = runService.createRunning(conversationId, req.getQuestion(), userId, "USER");
+        long start = System.currentTimeMillis();
         List<String> roleCodes = roleMapper.selectRoleCodesByUserId(userId);
-        return pythonClient.analyze(req, userId, roleCodes);
+        try {
+            JSONObject response = pythonClient.analyze(req, userId, roleCodes);
+            long durationMs = System.currentTimeMillis() - start;
+            runService.saveResult(conversationId, response, durationMs);
+            response.put("runRecordId", runId);
+            response.put("run_record_id", runId);
+            response.put("conversationId", conversationId);
+            response.put("conversation_id", conversationId);
+            return response;
+        } catch (RuntimeException exception) {
+            runService.saveFailure(conversationId, exception.getMessage(), System.currentTimeMillis() - start);
+            throw exception;
+        }
     }
 }

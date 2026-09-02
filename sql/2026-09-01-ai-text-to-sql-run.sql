@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS `ai_text_to_sql_run` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `conversation_id` varchar(128) NOT NULL COMMENT 'Text-to-SQL 会话ID',
+  `source_type` varchar(32) NOT NULL DEFAULT 'USER' COMMENT '来源：USER/EVAL',
+  `original_question` text NOT NULL COMMENT '用户原始问题',
+  `status` varchar(32) NOT NULL DEFAULT 'RUNNING' COMMENT '状态：RUNNING/WAITING_CLARIFICATION/COMPLETED/FAILED',
+  `error_message` text NULL COMMENT '流程错误信息',
+  `state_snapshot_json` json NULL COMMENT 'Python LangGraph State完整快照',
+  `state_history_json` json NULL COMMENT 'Python LangGraph 每个节点写入历史',
+  `duration_ms` bigint NULL COMMENT '耗时毫秒',
+  `feedback_result` varchar(16) NULL COMMENT '反馈结果：GOOD/BAD',
+  `feedback_comment` text NULL COMMENT '反馈说明',
+  `feedback_at` datetime NULL COMMENT '反馈时间',
+  `created_by` bigint NULL COMMENT '创建人',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_ai_text_to_sql_run_conversation` (`conversation_id`),
+  KEY `idx_ai_text_to_sql_run_created` (`created_at`),
+  KEY `idx_ai_text_to_sql_run_status` (`status`, `created_at`),
+  KEY `idx_ai_text_to_sql_run_feedback` (`feedback_result`, `feedback_at`),
+  KEY `idx_ai_text_to_sql_run_user` (`created_by`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI Text-to-SQL运行记录';

@@ -1,0 +1,42 @@
+CREATE TABLE IF NOT EXISTS `ai_text_to_sql_eval_question` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `question` text NOT NULL COMMENT '评测问题',
+  `business_domain` varchar(64) NULL COMMENT '业务环境',
+  `eval_target` varchar(64) NOT NULL DEFAULT 'END_TO_END' COMMENT '评测目标',
+  `sample_category` varchar(64) NOT NULL DEFAULT 'NORMAL' COMMENT '样本场景',
+  `source_type` varchar(32) NOT NULL DEFAULT 'MANUAL' COMMENT '来源：MANUAL/RUN_HISTORY/FEEDBACK',
+  `source_run_id` bigint NULL COMMENT '来源运行记录ID',
+  `judge_note` text NULL COMMENT '人工判断说明',
+  `remark` text NULL COMMENT '备注',
+  `status` varchar(32) NOT NULL DEFAULT 'DRAFT' COMMENT '状态：DRAFT/ACTIVE/DISABLED',
+  `created_by` bigint NULL COMMENT '创建人',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_ai_text_to_sql_eval_question_source_run` (`source_run_id`),
+  KEY `idx_ai_text_to_sql_eval_question_status` (`status`, `created_at`),
+  KEY `idx_ai_text_to_sql_eval_question_business` (`business_domain`, `created_at`),
+  KEY `idx_ai_text_to_sql_eval_question_target` (`eval_target`, `created_at`),
+  KEY `idx_ai_text_to_sql_eval_question_source` (`source_type`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI Text-to-SQL评测样本';
+
+CREATE TABLE IF NOT EXISTS `ai_text_to_sql_eval_assertion` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `eval_question_id` bigint NOT NULL COMMENT '评测样本ID',
+  `actual_key` varchar(128) NOT NULL COMMENT 'State取值路径',
+  `operator` varchar(32) NOT NULL COMMENT '判断方式',
+  `expected_value` text NULL COMMENT '客观判断期望值',
+  `required` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否必过',
+  `weight` decimal(5,2) NOT NULL DEFAULT 1.00 COMMENT '权重',
+  `failure_type` varchar(64) NULL COMMENT '失败归因',
+  `reference_answer` text NULL COMMENT '主观判断参考答案',
+  `key_points` text NULL COMMENT '主观判断必须覆盖要点',
+  `forbidden_points` text NULL COMMENT '主观判断禁止出现内容',
+  `min_score` int NULL COMMENT '主观判断最低通过分',
+  `sort_order` int NOT NULL DEFAULT 0 COMMENT '展示顺序',
+  `remark` varchar(512) NULL COMMENT '规则说明',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_ai_text_to_sql_eval_assertion_question` (`eval_question_id`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI Text-to-SQL评测断言';

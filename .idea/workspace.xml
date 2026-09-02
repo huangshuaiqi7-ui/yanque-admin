@@ -6,16 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="351cd859-364f-4097-a743-719a8f11f9c8" name="Changes" comment="feat:提交">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/constant/JwtConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/constant/JwtConstants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/context/UserContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/context/UserContext.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/interceptor/SignInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/interceptor/SignInterceptor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/interceptor/TokenInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/interceptor/TokenInterceptor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/service/RbacAuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/service/RbacAuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/utils/RedisUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/commons/utils/RedisUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlExplainChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlExplainChecker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlSqlValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlSqlValidator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/users/service/impl/SysUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/users/service/impl/SysUserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionIntegrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/cn/yanque/modules/aitexttosql/service/TextToSqlPermissionIntegrationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/controller/TextToSqlAnalysisController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/controller/TextToSqlAnalysisController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlAnalysisService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/yanque/modules/aitexttosql/service/TextToSqlAnalysisService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -405,7 +397,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788242492169</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="feat:提交">
+      <option name="closed" value="true" />
+      <created>1788257517433</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1788257517433</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

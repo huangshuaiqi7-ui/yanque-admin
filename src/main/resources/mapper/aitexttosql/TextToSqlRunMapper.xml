@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aitexttosql.mapper.TextToSqlRunMapper">
+    <resultMap id="RunMap" type="cn.yanque.modules.aitexttosql.pojo.entity.TextToSqlRunEntity">
+        <id property="id" column="id"/>
+        <result property="conversationId" column="conversation_id"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="originalQuestion" column="original_question"/>
+        <result property="status" column="status"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="stateSnapshotJson" column="state_snapshot_json"/>
+        <result property="stateHistoryJson" column="state_history_json"/>
+        <result property="durationMs" column="duration_ms"/>
+        <result property="feedbackResult" column="feedback_result"/>
+        <result property="feedbackComment" column="feedback_comment"/>
+        <result property="feedbackAt" column="feedback_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into ai_text_to_sql_run(
+            conversation_id, source_type, original_question, status, created_by, created_at, updated_at
+        ) values (
+            #{conversationId}, #{sourceType}, #{originalQuestion}, #{status}, #{createdBy}, now(), now()
+        )
+        on duplicate key update
+            original_question = values(original_question),
+            status = values(status),
+            created_by = values(created_by),
+            updated_at = now(),
+            id = last_insert_id(id)
+    </insert>
+
+    <update id="updateResult">
+        update ai_text_to_sql_run
+        set status = #{status},
+            error_message = #{errorMessage},
+            state_snapshot_json = #{stateSnapshotJson},
+            state_history_json = #{stateHistoryJson},
+            duration_ms = #{durationMs},
+            updated_at = now()
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="updateFailure">
+        update ai_text_to_sql_run
+        set status = #{status},
+            error_message = #{errorMessage},
+            duration_ms = #{durationMs},
+            updated_at = now()
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="updateFeedbackById">
+        update ai_text_to_sql_run
+        set feedback_result = #{feedbackResult},
+            feedback_comment = #{feedbackComment},
+            feedback_at = now(),
+            updated_at = now()
+        where id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="RunMap">
+        select * from ai_text_to_sql_run where id = #{id}
+    </select>
+
+    <select id="selectByConversationId" resultMap="RunMap">
+        select * from ai_text_to_sql_run where conversation_id = #{conversationId}
+    </select>
+
+    <select id="selectPage" resultMap="RunMap">
+        select * from ai_text_to_sql_run
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and (
+                    original_question like concat('%', #{keyword}, '%')
+                    or error_message like concat('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="conversationId != null and conversationId != ''">
+                and conversation_id = #{conversationId}
+            </if>
+            <if test="sourceType != null and sourceType != ''">
+                and source_type = #{sourceType}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="feedbackResult == 'UNFEEDBACK'">
+                and feedback_result is null
+            </if>
+            <if test="feedbackResult != null and feedbackResult != '' and feedbackResult != 'UNFEEDBACK'">
+                and feedback_result = #{feedbackResult}
+            </if>
+        </where>
+        order by created_at desc, id desc
+    </select>
+</mapper>
