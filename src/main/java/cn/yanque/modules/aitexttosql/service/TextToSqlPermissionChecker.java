@@ -75,6 +75,11 @@ public class TextToSqlPermissionChecker {
         return TextToSqlPermissionCheckResult.allowed();
     }
 
+    /**
+     * 解析本次请求的角色编码。
+     *
+     * Python 调内部查询中心时会带 roleCodes；如果没带，就按 userId 从数据库查询。
+     */
     private List<String> resolveRoleCodes(TextToSqlExecuteReq req) {
         List<String> roleCodes = cleanValues(req.getRoleCodes());
         if (roleCodes.isEmpty()) {
@@ -86,6 +91,9 @@ public class TextToSqlPermissionChecker {
         return cleanValues(roleMapper.selectRoleCodesByUserId(req.getUserId()));
     }
 
+    /**
+     * 校验 SQL 使用的表是否都在当前角色授权范围内。
+     */
     private TextToSqlPermissionCheckResult checkTables(List<String> usedTables, List<TextToSqlRolePermissionEntity> grants) {
         Set<String> allowedTables = new LinkedHashSet<>();
         for (TextToSqlRolePermissionEntity grant : grants) {
@@ -109,6 +117,9 @@ public class TextToSqlPermissionChecker {
         return result;
     }
 
+    /**
+     * 校验 SQL 使用的字段是否都在当前角色授权范围内。
+     */
     private TextToSqlPermissionCheckResult checkColumns(SqlValidationResult validation, List<TextToSqlRolePermissionEntity> grants) {
         Set<String> allowedColumnKeys = new LinkedHashSet<>();
         for (TextToSqlRolePermissionEntity grant : grants) {
@@ -138,6 +149,11 @@ public class TextToSqlPermissionChecker {
         return result;
     }
 
+    /**
+     * 清理角色编码列表。
+     *
+     * 去掉空值、去重，并统一转大写，避免大小写导致权限判断失败。
+     */
     private List<String> cleanValues(List<String> values) {
         List<String> result = new ArrayList<>();
         if (values == null) {
@@ -152,6 +168,9 @@ public class TextToSqlPermissionChecker {
         return result;
     }
 
+    /**
+     * 表名和字段名比较时统一转小写。
+     */
     private String normalize(String value) {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }

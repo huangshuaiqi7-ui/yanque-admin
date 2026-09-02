@@ -20,6 +20,9 @@ public class SqlExecutionResult {
     private List<Map<String, Object>> rows = new ArrayList<>();
     private int rowCount;
 
+    /**
+     * SQL AST/DDL 校验失败时的返回结果。
+     */
     public static SqlExecutionResult validationFailed(SqlValidationResult validation) {
         SqlExecutionResult result = new SqlExecutionResult();
         result.setSuccess(false);
@@ -28,6 +31,9 @@ public class SqlExecutionResult {
         return result;
     }
 
+    /**
+     * 角色数据权限校验失败时的返回结果。
+     */
     public static SqlExecutionResult permissionDenied(TextToSqlPermissionCheckResult permission) {
         SqlExecutionResult result = new SqlExecutionResult();
         result.setSuccess(false);
@@ -36,6 +42,9 @@ public class SqlExecutionResult {
         return result;
     }
 
+    /**
+     * 执行计划检查拒绝时的返回结果。
+     */
     public static SqlExecutionResult explainDenied(
             String sql,
             SqlValidationResult validation,
@@ -52,6 +61,9 @@ public class SqlExecutionResult {
         return result;
     }
 
+    /**
+     * SQL 真正执行成功时的返回结果。
+     */
     public static SqlExecutionResult success(
             String sql,
             SqlValidationResult validation,

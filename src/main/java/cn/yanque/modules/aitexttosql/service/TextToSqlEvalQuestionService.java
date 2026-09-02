@@ -59,6 +59,11 @@ public class TextToSqlEvalQuestionService {
         this.runMapper = runMapper;
     }
 
+    /**
+     * 分页查询评测样本。
+     *
+     * 列表页只展示样本摘要和断言数量，不加载完整断言，避免列表接口变重。
+     */
     public PageResult<TextToSqlEvalQuestionRes> page(TextToSqlEvalQuestionPageReq req) {
         PageHelper.startPage(req.getPageNum(), req.getPageSize());
         List<TextToSqlEvalQuestionEntity> rows = questionMapper.selectPage(
@@ -73,6 +78,11 @@ public class TextToSqlEvalQuestionService {
                 rows.stream().map(this::toResWithoutAssertions).toList());
     }
 
+    /**
+     * 查询样本详情。
+     *
+     * 详情页要编辑判断标准，所以这里会带出当前样本的全部断言。
+     */
     public TextToSqlEvalQuestionRes detail(Long id) {
         TextToSqlEvalQuestionEntity entity = questionMapper.selectById(id);
         if (entity == null) {
@@ -81,6 +91,11 @@ public class TextToSqlEvalQuestionService {
         return toRes(entity, assertionMapper.selectByEvalQuestionId(id));
     }
 
+    /**
+     * 手动创建评测样本。
+     *
+     * 样本主表保存问题和样本定位，断言表保存每一条判断标准。
+     */
     @Transactional
     public Long create(TextToSqlEvalQuestionSaveReq req, Long createdBy) {
         TextToSqlEvalQuestionEntity entity = new TextToSqlEvalQuestionEntity();
@@ -98,6 +113,11 @@ public class TextToSqlEvalQuestionService {
         return entity.getId();
     }
 
+    /**
+     * 更新评测样本。
+     *
+     * 断言可能新增、删除、调整顺序；当前直接先删后插，保持逻辑简单。
+     */
     @Transactional
     public void update(Long id, TextToSqlEvalQuestionSaveReq req) {
         detail(id);
@@ -114,6 +134,12 @@ public class TextToSqlEvalQuestionService {
         replaceAssertions(id, req.getAssertions());
     }
 
+    /**
+     * 从运行记录生成草稿样本。
+     *
+     * 这里只保存 sourceRunId，不复制运行记录里的 State/History 大 JSON。
+     * 需要查看来源时，实时从运行记录表读取。
+     */
     @Transactional
     public Long createFromRun(Long runId, Long createdBy) {
         TextToSqlEvalQuestionEntity existed = questionMapper.selectBySourceRunId(runId);
@@ -166,6 +192,11 @@ public class TextToSqlEvalQuestionService {
         return res;
     }
 
+    /**
+     * 替换某个样本的断言列表。
+     *
+     * 页面最终提交什么，这里就保存什么，不额外做复杂 diff。
+     */
     private void replaceAssertions(Long evalQuestionId, List<TextToSqlEvalAssertionReq> reqList) {
         assertionMapper.deleteByEvalQuestionId(evalQuestionId);
         List<TextToSqlEvalAssertionEntity> assertions = buildAssertions(evalQuestionId, reqList);
@@ -174,6 +205,11 @@ public class TextToSqlEvalQuestionService {
         }
     }
 
+    /**
+     * 把前端提交的断言请求转换成数据库实体。
+     *
+     * 客观断言必须填写 expectedValue；SEMANTIC 断言使用 referenceAnswer/keyPoints/forbiddenPoints。
+     */
     private List<TextToSqlEvalAssertionEntity> buildAssertions(Long evalQuestionId, List<TextToSqlEvalAssertionReq> reqList) {
         if (reqList == null || reqList.isEmpty()) {
             return List.of();
@@ -207,6 +243,11 @@ public class TextToSqlEvalQuestionService {
         return result;
     }
 
+    /**
+     * 从一次运行的 State 快照里生成默认断言。
+     *
+     * 这些断言只是起步模板，后续还需要在样本页人工整理。
+     */
     private List<TextToSqlEvalAssertionReq> buildAssertionsFromState(JSONObject state) {
         List<TextToSqlEvalAssertionReq> result = new ArrayList<>();
         addAssertion(result, "intent_result.business_domain", "EQ", textValue(valueByPath(state, "intent_result.business_domain")), "INTENT_ERROR");
@@ -223,6 +264,11 @@ public class TextToSqlEvalQuestionService {
         return result;
     }
 
+    /**
+     * 数组字段会拆成多条 CONTAINS 断言。
+     *
+     * 例如 selected_tables = ["order_payment", "prepay_order"] 会生成两条选表断言。
+     */
     private void addArrayAssertions(List<TextToSqlEvalAssertionReq> result, String actualKey, Object value, String failureType) {
         if (value instanceof JSONArray array) {
             for (Object item : array) {
@@ -233,6 +279,11 @@ public class TextToSqlEvalQuestionService {
         addAssertion(result, actualKey, "CONTAINS", textValue(value), failureType);
     }
 
+    /**
+     * 添加一条默认断言。
+     *
+     * 对需要期望值的客观断言，如果 expectedValue 为空就跳过，避免生成无效标准。
+     */
     private void addAssertion(List<TextToSqlEvalAssertionReq> result, String actualKey, String operator, String expectedValue, String failureType) {
         if (!"NOT_EMPTY".equals(operator) && !"SEMANTIC".equals(operator) && StrUtil.isBlank(expectedValue)) {
             return;
@@ -246,6 +297,11 @@ public class TextToSqlEvalQuestionService {
         result.add(req);
     }
 
+    /**
+     * 安全解析运行记录里的 State JSON。
+     *
+     * 历史数据或失败记录可能不是合法 JSON，解析失败时返回空对象。
+     */
     private JSONObject parseObject(String text) {
         if (StrUtil.isBlank(text) || "null".equals(text)) {
             return new JSONObject();
@@ -257,6 +313,11 @@ public class TextToSqlEvalQuestionService {
         }
     }
 
+    /**
+     * 从 State 快照中按点路径取值。
+     *
+     * 例如 intent_result.business_domain 会逐层读取 JSON 对象。
+     */
     private Object valueByPath(JSONObject state, String path) {
         Object current = state;
         for (String key : path.split("\\.")) {
@@ -268,6 +329,9 @@ public class TextToSqlEvalQuestionService {
         return current;
     }
 
+    /**
+     * 校验并标准化评测目标。
+     */
     private String normalizeTarget(String value) {
         String target = StrUtil.blankToDefault(StrUtil.trim(value), TARGET_END_TO_END);
         if (!SUPPORT_TARGETS.contains(target)) {
@@ -276,6 +340,9 @@ public class TextToSqlEvalQuestionService {
         return target;
     }
 
+    /**
+     * 校验并标准化样本场景。
+     */
     private String normalizeCategory(String value) {
         String category = StrUtil.blankToDefault(StrUtil.trim(value), CATEGORY_NORMAL);
         if (!SUPPORT_CATEGORIES.contains(category)) {
@@ -284,6 +351,9 @@ public class TextToSqlEvalQuestionService {
         return category;
     }
 
+    /**
+     * 校验并标准化样本状态。
+     */
     private String normalizeStatus(String value) {
         String status = StrUtil.blankToDefault(StrUtil.trim(value), STATUS_DRAFT);
         if (!SUPPORT_STATUS.contains(status)) {
@@ -292,6 +362,9 @@ public class TextToSqlEvalQuestionService {
         return status;
     }
 
+    /**
+     * 校验并标准化断言方式。
+     */
     private String normalizeOperator(String value) {
         String operator = StrUtil.blankToDefault(StrUtil.trim(value), "EQ");
         if (!SUPPORT_OPERATORS.contains(operator)) {
@@ -300,10 +373,16 @@ public class TextToSqlEvalQuestionService {
         return operator;
     }
 
+    /**
+     * 判断当前断言方式是否必须填写期望值。
+     */
     private boolean needsExpectedValue(String operator) {
         return !"EXISTS".equals(operator) && !"NOT_EMPTY".equals(operator) && !"SEMANTIC".equals(operator);
     }
 
+    /**
+     * 读取必填文本，空值直接抛参数错误。
+     */
     private String requireText(String value, String message) {
         String text = blankToNull(value);
         if (text == null) {
@@ -312,6 +391,9 @@ public class TextToSqlEvalQuestionService {
         return text;
     }
 
+    /**
+     * 优先使用第一个值；为空时使用兜底值。
+     */
     private String firstText(Object first, String fallback) {
         String firstValue = textValue(first);
         return StrUtil.isBlank(firstValue) ? requireText(fallback, "运行记录缺少问题，不能生成样本") : firstValue;

@@ -24,6 +24,8 @@ public class TextToSqlSqlExecutor {
 
     /**
      * 使用只读 SELECT SQL 查询数据。
+     *
+     * SQL 走到这里时已经通过 AST 校验、权限校验和执行计划检查。
      */
     public List<Map<String, Object>> query(String sql, int maxRows) {
         return jdbcTemplate.query(
@@ -36,6 +38,7 @@ public class TextToSqlSqlExecutor {
                 (resultSet, rowNum) -> {
                     ResultSetMetaData metaData = resultSet.getMetaData();
                     Map<String, Object> row = new LinkedHashMap<>();
+                    // 使用 columnLabel，保留 SQL 里的别名，前端展示会更友好。
                     for (int columnIndex = 1; columnIndex <= metaData.getColumnCount(); columnIndex++) {
                         row.put(metaData.getColumnLabel(columnIndex), resultSet.getObject(columnIndex));
                     }

@@ -30,6 +30,11 @@ public class TextToSqlRunService {
         this.mapper = mapper;
     }
 
+    /**
+     * 创建一条运行记录，并标记为 RUNNING。
+     *
+     * sourceType 用来区分来源：用户手动分析是 USER，评测任务重跑是 EVAL。
+     */
     public Long createRunning(String conversationId, String question, Long userId, String sourceType) {
         TextToSqlRunEntity entity = new TextToSqlRunEntity();
         entity.setConversationId(conversationId);
@@ -41,6 +46,12 @@ public class TextToSqlRunService {
         return entity.getId();
     }
 
+    /**
+     * 保存 Python Text-to-SQL 返回的最终结果。
+     *
+     * stateSnapshot/stateHistory 是运行记录详情和评测断言的核心数据：
+     * stateSnapshot 保存最后一次完整 State，stateHistory 保存 LangGraph 每一步节点写入。
+     */
     public void saveResult(String conversationId, JSONObject response, Long durationMs) {
         JSONObject stateSnapshot = objectOf(response, "stateSnapshot", "state_snapshot");
         Object stateHistory = first(response, "stateHistory", "state_history");
@@ -55,6 +66,9 @@ public class TextToSqlRunService {
         mapper.updateResult(entity);
     }
 
+    /**
+     * Python 调用异常时保存失败状态。
+     */
     public void saveFailure(String conversationId, String errorMessage, Long durationMs) {
         TextToSqlRunEntity entity = new TextToSqlRunEntity();
         entity.setConversationId(conversationId);
@@ -64,6 +78,11 @@ public class TextToSqlRunService {
         mapper.updateFailure(entity);
     }
 
+    /**
+     * 分页查询运行记录。
+     *
+     * 运行记录页会用到关键词、会话、来源、状态和反馈结果筛选。
+     */
     public PageResult<TextToSqlRunEntity> page(TextToSqlRunPageReq req) {
         PageHelper.startPage(req.getPageNum(), req.getPageSize());
         List<TextToSqlRunEntity> rows = mapper.selectPage(
@@ -76,6 +95,11 @@ public class TextToSqlRunService {
         return new PageResult<>(info.getTotal(), info.getPageNum(), info.getPageSize(), rows);
     }
 
+    /**
+     * 保存用户对本次结果的最新反馈。
+     *
+     * v1 只保留最新一次反馈；BAD 必须写说明，方便后面整理评测样本。
+     */
     public TextToSqlRunEntity saveFeedback(Long runId, TextToSqlFeedbackReq req) {
         detail(runId);
 
@@ -92,6 +116,9 @@ public class TextToSqlRunService {
         return detail(runId);
     }
 
+    /**
+     * 查询单条运行记录，不存在时抛业务异常。
+     */
     public TextToSqlRunEntity detail(Long id) {
         TextToSqlRunEntity entity = mapper.selectById(id);
         if (entity == null) {
@@ -100,6 +127,11 @@ public class TextToSqlRunService {
         return entity;
     }
 
+    /**
+     * 根据 Python 响应推导运行状态。
+     *
+     * 有 errorMessage 表示失败；需要澄清时不是完成，而是等待用户补充。
+     */
     private String resolveStatus(JSONObject response) {
         if (StrUtil.isNotBlank(firstString(response, "errorMessage", "error_message"))) {
             return "FAILED";
@@ -110,6 +142,9 @@ public class TextToSqlRunService {
         return "COMPLETED";
     }
 
+    /**
+     * 从同一个 JSON 中兼容读取 camelCase 和 snake_case 字段。
+     */
     private Object first(JSONObject obj, String... keys) {
         if (obj == null) {
             return null;
@@ -136,6 +171,11 @@ public class TextToSqlRunService {
         return value == null ? false : Boolean.parseBoolean(String.valueOf(value));
     }
 
+    /**
+     * 从 JSON 里读取对象字段。
+     *
+     * 如果字段已经是字符串形式 JSON，也会解析成 JSONObject。
+     */
     private JSONObject objectOf(JSONObject obj, String... keys) {
         Object value = first(obj, keys);
         if (value instanceof JSONObject jsonObject) {

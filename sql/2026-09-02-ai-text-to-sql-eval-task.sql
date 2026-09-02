@@ -1,0 +1,60 @@
+CREATE TABLE IF NOT EXISTS `ai_text_to_sql_eval_task` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `name` varchar(128) NOT NULL COMMENT '任务名称',
+  `business_domain` varchar(64) NULL COMMENT '业务环境',
+  `eval_target` varchar(64) NULL COMMENT '评测目标',
+  `sample_category` varchar(64) NULL COMMENT '样本场景',
+  `status` varchar(32) NOT NULL DEFAULT 'PENDING' COMMENT '状态：PENDING/RUNNING/COMPLETED/FAILED',
+  `total_count` int NOT NULL DEFAULT 0 COMMENT '样本总数',
+  `pass_count` int NOT NULL DEFAULT 0 COMMENT '通过数',
+  `fail_count` int NOT NULL DEFAULT 0 COMMENT '失败数',
+  `interrupted_count` int NOT NULL DEFAULT 0 COMMENT '中断数',
+  `pass_rate` decimal(6,2) NOT NULL DEFAULT 0.00 COMMENT '通过率',
+  `started_at` datetime NULL COMMENT '开始时间',
+  `finished_at` datetime NULL COMMENT '结束时间',
+  `duration_ms` bigint NULL COMMENT '耗时毫秒',
+  `error_message` text NULL COMMENT '错误信息',
+  `created_by` bigint NULL COMMENT '创建人',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_ai_text_to_sql_eval_task_status` (`status`, `created_at`),
+  KEY `idx_ai_text_to_sql_eval_task_scope` (`business_domain`, `eval_target`, `sample_category`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI Text-to-SQL评测任务';
+
+CREATE TABLE IF NOT EXISTS `ai_text_to_sql_eval_result` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `eval_task_id` bigint NOT NULL COMMENT '评测任务ID',
+  `eval_question_id` bigint NOT NULL COMMENT '评测样本ID',
+  `run_record_id` bigint NULL COMMENT '本次运行记录ID',
+  `question` text NOT NULL COMMENT '评测问题',
+  `result_status` varchar(32) NOT NULL DEFAULT 'FAILED' COMMENT '结果状态：PASSED/FAILED/INTERRUPTED',
+  `passed` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否通过',
+  `score` decimal(6,2) NOT NULL DEFAULT 0.00 COMMENT '得分',
+  `state_snapshot_json` longtext NULL COMMENT '本次State快照',
+  `state_history_json` longtext NULL COMMENT '本次节点历史',
+  `error_message` text NULL COMMENT '错误信息',
+  `duration_ms` bigint NULL COMMENT '耗时毫秒',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_ai_text_to_sql_eval_result_task` (`eval_task_id`, `result_status`, `id`),
+  KEY `idx_ai_text_to_sql_eval_result_question` (`eval_question_id`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI Text-to-SQL评测样本结果';
+
+CREATE TABLE IF NOT EXISTS `ai_text_to_sql_eval_assertion_result` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `eval_result_id` bigint NOT NULL COMMENT '评测样本结果ID',
+  `eval_assertion_id` bigint NULL COMMENT '评测断言ID',
+  `actual_key` varchar(128) NOT NULL COMMENT 'State取值路径',
+  `operator` varchar(32) NOT NULL COMMENT '判断方式',
+  `expected_value` text NULL COMMENT '期望值',
+  `actual_value` longtext NULL COMMENT '实际值',
+  `required` tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否影响最终结果',
+  `passed` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否通过',
+  `score` decimal(6,2) NOT NULL DEFAULT 0.00 COMMENT '得分',
+  `failure_type` varchar(64) NULL COMMENT '失败归因',
+  `reason` varchar(512) NULL COMMENT '判断说明',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_ai_text_to_sql_eval_assertion_result_result` (`eval_result_id`, `passed`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI Text-to-SQL评测断言结果';

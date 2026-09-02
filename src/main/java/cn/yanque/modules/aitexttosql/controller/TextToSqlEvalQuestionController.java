@@ -30,27 +30,42 @@ public class TextToSqlEvalQuestionController {
         this.service = service;
     }
 
+    /**
+     * 分页查询评测样本。
+     */
     @GetMapping
     public ApiResponse<PageResult<TextToSqlEvalQuestionRes>> page(@Valid TextToSqlEvalQuestionPageReq req) {
         return ApiResponse.success(service.page(req));
     }
 
+    /**
+     * 查看评测样本详情，包含断言列表。
+     */
     @GetMapping("/{id}")
     public ApiResponse<TextToSqlEvalQuestionRes> detail(@PathVariable Long id) {
         return ApiResponse.success(service.detail(id));
     }
 
+    /**
+     * 手动录入评测样本。
+     */
     @PostMapping
     public ApiResponse<Map<String, Long>> create(@Valid @RequestBody TextToSqlEvalQuestionSaveReq req) {
         return ApiResponse.success(Map.of("id", service.create(req, UserContext.getUserId())));
     }
 
+    /**
+     * 修改评测样本和它的断言标准。
+     */
     @PutMapping("/{id}")
     public ApiResponse<Void> update(@PathVariable Long id, @Valid @RequestBody TextToSqlEvalQuestionSaveReq req) {
         service.update(id, req);
         return ApiResponse.success();
     }
 
+    /**
+     * 从运行记录生成草稿样本。
+     */
     @PostMapping("/from-run/{runId}")
     public ApiResponse<Map<String, Long>> createFromRun(@PathVariable Long runId) {
         return ApiResponse.success(Map.of("id", service.createFromRun(runId, UserContext.getUserId())));

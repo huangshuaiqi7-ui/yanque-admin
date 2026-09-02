@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aitexttosql.mapper.TextToSqlEvalResultMapper">
+    <resultMap id="ResultMap" type="cn.yanque.modules.aitexttosql.pojo.entity.TextToSqlEvalResultEntity">
+        <id property="id" column="id"/>
+        <result property="evalTaskId" column="eval_task_id"/>
+        <result property="evalQuestionId" column="eval_question_id"/>
+        <result property="runRecordId" column="run_record_id"/>
+        <result property="question" column="question"/>
+        <result property="resultStatus" column="result_status"/>
+        <result property="passed" column="passed"/>
+        <result property="score" column="score"/>
+        <result property="stateSnapshotJson" column="state_snapshot_json"/>
+        <result property="stateHistoryJson" column="state_history_json"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="durationMs" column="duration_ms"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into ai_text_to_sql_eval_result(
+            eval_task_id, eval_question_id, run_record_id, question, result_status, passed, score,
+            state_snapshot_json, state_history_json, error_message, duration_ms, created_at
+        ) values (
+            #{evalTaskId}, #{evalQuestionId}, #{runRecordId}, #{question}, #{resultStatus}, #{passed}, #{score},
+            #{stateSnapshotJson}, #{stateHistoryJson}, #{errorMessage}, #{durationMs}, now()
+        )
+    </insert>
+
+    <update id="updateById">
+        update ai_text_to_sql_eval_result
+        set run_record_id = #{runRecordId},
+            result_status = #{resultStatus},
+            passed = #{passed},
+            score = #{score},
+            state_snapshot_json = #{stateSnapshotJson},
+            state_history_json = #{stateHistoryJson},
+            error_message = #{errorMessage},
+            duration_ms = #{durationMs}
+        where id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="ResultMap">
+        select * from ai_text_to_sql_eval_result where id = #{id}
+    </select>
+
+    <select id="selectByTaskId" resultMap="ResultMap">
+        select * from ai_text_to_sql_eval_result
+        where eval_task_id = #{evalTaskId}
+        <if test="resultStatus != null and resultStatus != ''">
+            and result_status = #{resultStatus}
+        </if>
+        <if test="resultStatus == null and passed != null">
+            and passed = #{passed}
+        </if>
+        order by passed asc, id asc
+    </select>
+
+    <select id="countByTaskId" resultType="int">
+        select count(1) from ai_text_to_sql_eval_result where eval_task_id = #{evalTaskId}
+    </select>
+</mapper>

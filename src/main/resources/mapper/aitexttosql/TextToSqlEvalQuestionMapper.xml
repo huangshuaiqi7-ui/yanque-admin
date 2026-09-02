@@ -91,4 +91,31 @@
         </where>
         order by q.created_at desc, q.id desc
     </select>
+
+    <select id="selectActiveForEval" resultMap="QuestionMap">
+        select <include refid="QuestionColumns"/>
+        from ai_text_to_sql_eval_question q
+        where q.status = 'ACTIVE'
+        <if test="businessDomain != null and businessDomain != ''">
+            and q.business_domain = #{businessDomain}
+        </if>
+        <if test="evalTarget != null and evalTarget != ''">
+            and q.eval_target = #{evalTarget}
+        </if>
+        <if test="sampleCategory != null and sampleCategory != ''">
+            and q.sample_category = #{sampleCategory}
+        </if>
+        order by q.id asc
+    </select>
+
+    <select id="selectActiveByIds" resultMap="QuestionMap">
+        select <include refid="QuestionColumns"/>
+        from ai_text_to_sql_eval_question q
+        where q.status = 'ACTIVE'
+          and q.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by q.id asc
+    </select>
 </mapper>

@@ -50,6 +50,46 @@ public class TextToSqlPythonClient {
         }
     }
 
+    /**
+     * 调用 Python 大模型裁判，判断自然语言字段是否符合评测标准。
+     */
+    public JSONObject semanticJudge(String question,
+                                    String actualValue,
+                                    String referenceAnswer,
+                                    String keyPoints,
+                                    String forbiddenPoints,
+                                    Integer minScore) {
+        String url = baseUrl.replaceAll("/$", "") + "/ai/text-to-sql/eval/semantic-judge";
+        Map<String, Object> request = new LinkedHashMap<>();
+        request.put("question", question);
+        request.put("actual_value", actualValue);
+        request.put("reference_answer", referenceAnswer);
+        request.put("key_points", keyPoints);
+        request.put("forbidden_points", forbiddenPoints);
+        request.put("min_score", minScore == null ? 80 : minScore);
+        String requestBody = JSON.toJSONString(request);
+        log.info("调用AI Text-to-SQL语义评测: question={}", question);
+
+        try (HttpResponse response = HttpRequest.post(url)
+                .contentType("application/json; charset=UTF-8")
+                .body(requestBody)
+                .execute()) {
+            String body = response.body();
+            if (!response.isOk()) {
+                throw new IllegalStateException("AI Text-to-SQL语义评测失败: status=" + response.getStatus() + ", body=" + body);
+            }
+            return JSON.parseObject(body);
+        } catch (Exception exception) {
+            log.warn("AI Text-to-SQL语义评测异常", exception);
+            throw new IllegalStateException(exception);
+        }
+    }
+
+    /**
+     * 组装 Python Text-to-SQL 查询请求。
+     *
+     * Java 侧负责补 userId 和角色；Python 侧负责意图识别、选表、生成 SQL、总结。
+     */
     private Map<String, Object> buildRequest(TextToSqlAnalyzeReq req, Long userId, List<String> roleCodes) {
         Map<String, Object> request = new LinkedHashMap<>();
         request.put("question", req.getQuestion());

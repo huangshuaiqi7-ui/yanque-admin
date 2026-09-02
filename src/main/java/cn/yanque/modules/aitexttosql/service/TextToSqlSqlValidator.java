@@ -390,6 +390,11 @@ public class TextToSqlSqlValidator {
         return columnMap;
     }
 
+    /**
+     * 遍历 SELECT 语句，收集所有出现过的字段。
+     *
+     * 包含 SELECT、WHERE、JOIN ON、GROUP BY、ORDER BY、HAVING 以及子查询里的字段。
+     */
     private void collectColumnMap(SelectBody selectBody, Map<String, List<String>> columnMap) {
         if (selectBody instanceof PlainSelect plainSelect) {
             collectSubSelectColumnMap(plainSelect, columnMap);
@@ -407,6 +412,9 @@ public class TextToSqlSqlValidator {
         }
     }
 
+    /**
+     * 遍历单个表达式里的字段。
+     */
     private void collectColumnMap(
             Expression expression,
             Map<String, List<String>> columnMap,
@@ -415,6 +423,11 @@ public class TextToSqlSqlValidator {
         expression.accept(buildColumnMapVisitor(columnMap, scope));
     }
 
+    /**
+     * 构造字段收集 visitor。
+     *
+     * JSQLParser 在访问 Column 节点时会回调 visit(Column)，这里把字段归到真实表名下。
+     */
     private ExpressionDeParser buildColumnMapVisitor(
             Map<String, List<String>> columnMap,
             SelectScope scope
@@ -432,6 +445,9 @@ public class TextToSqlSqlValidator {
         };
     }
 
+    /**
+     * 先递归收集 FROM/JOIN 子查询里的字段。
+     */
     private void collectSubSelectColumnMap(PlainSelect plainSelect, Map<String, List<String>> columnMap) {
         collectSubSelectColumnMap(plainSelect.getFromItem(), columnMap);
         if (plainSelect.getJoins() == null) {
@@ -442,18 +458,27 @@ public class TextToSqlSqlValidator {
         }
     }
 
+    /**
+     * 如果 FROM/JOIN 目标是子查询，就递归提取子查询字段。
+     */
     private void collectSubSelectColumnMap(FromItem fromItem, Map<String, List<String>> columnMap) {
         if (fromItem instanceof SubSelect subSelect) {
             collectColumnMap(subSelect.getSelectBody(), columnMap);
         }
     }
 
+    /**
+     * 找出派生表里不存在的字段。
+     */
     private List<String> getUnknownDerivedColumns(SelectBody selectBody) {
         List<String> result = new ArrayList<>();
         collectUnknownDerivedColumns(selectBody, result);
         return unique(result);
     }
 
+    /**
+     * 递归遍历 SELECT，收集非法派生表字段。
+     */
     private void collectUnknownDerivedColumns(SelectBody selectBody, List<String> result) {
         if (selectBody instanceof PlainSelect plainSelect) {
             collectSubSelectUnknownDerivedColumns(plainSelect, result);
@@ -466,6 +491,9 @@ public class TextToSqlSqlValidator {
         }
     }
 
+    /**
+     * 递归检查 FROM/JOIN 子查询内部的派生表字段。
+     */
     private void collectSubSelectUnknownDerivedColumns(PlainSelect plainSelect, List<String> result) {
         collectSubSelectUnknownDerivedColumns(plainSelect.getFromItem(), result);
         if (plainSelect.getJoins() == null) {
@@ -476,12 +504,20 @@ public class TextToSqlSqlValidator {
         }
     }
 
+    /**
+     * 如果 FROM/JOIN 目标是子查询，就继续检查子查询内部。
+     */
     private void collectSubSelectUnknownDerivedColumns(FromItem fromItem, List<String> result) {
         if (fromItem instanceof SubSelect subSelect) {
             collectUnknownDerivedColumns(subSelect.getSelectBody(), result);
         }
     }
 
+    /**
+     * 检查当前 SELECT 层级里使用的派生表字段。
+     *
+     * 这里只看当前层，子查询由外层递归方法负责。
+     */
     private void collectUnknownDerivedColumnsInCurrentSelect(
             PlainSelect plainSelect,
             SelectScope scope,
@@ -517,6 +553,9 @@ public class TextToSqlSqlValidator {
         }
     }
 
+    /**
+     * 构造派生表字段检查 visitor。
+     */
     private ExpressionDeParser buildUnknownDerivedColumnVisitor(SelectScope scope, List<String> result) {
         return new ExpressionDeParser() {
             @Override
@@ -535,18 +574,27 @@ public class TextToSqlSqlValidator {
         };
     }
 
+    /**
+     * 访问一个可能为空的表达式。
+     */
     private void visitExpression(Expression expression, ExpressionDeParser visitor) {
         if (expression != null) {
             expression.accept(visitor);
         }
     }
 
+    /**
+     * 找出没有写表名或表别名的字段。
+     */
     private List<String> getUnqualifiedColumns(SelectBody selectBody) {
         List<String> columns = new ArrayList<>();
         collectUnqualifiedColumns(selectBody, columns, getSelectAliases(selectBody));
         return unique(columns);
     }
 
+    /**
+     * 递归收集裸字段。
+     */
     private void collectUnqualifiedColumns(SelectBody selectBody, List<String> columns, Set<String> selectAliases) {
         if (selectBody instanceof PlainSelect plainSelect) {
             collectSubSelectUnqualifiedColumns(plainSelect, columns);
@@ -563,6 +611,9 @@ public class TextToSqlSqlValidator {
         }
     }
 
+    /**
+     * 构造裸字段检查 visitor。
+     */
     private ExpressionDeParser buildUnqualifiedColumnVisitor(List<String> columns, Set<String> selectAliases) {
         return new ExpressionDeParser() {
             @Override
@@ -581,6 +632,9 @@ public class TextToSqlSqlValidator {
         };
     }
 
+    /**
+     * 递归检查 FROM/JOIN 子查询里的裸字段。
+     */
     private void collectSubSelectUnqualifiedColumns(PlainSelect plainSelect, List<String> columns) {
         collectSubSelectUnqualifiedColumns(plainSelect.getFromItem(), columns);
         if (plainSelect.getJoins() == null) {
@@ -591,6 +645,9 @@ public class TextToSqlSqlValidator {
         }
     }
 
+    /**
+     * 如果 FROM/JOIN 目标是子查询，就继续检查子查询内部。
+     */
     private void collectSubSelectUnqualifiedColumns(FromItem fromItem, List<String> columns) {
         if (fromItem instanceof SubSelect subSelect) {
             collectUnqualifiedColumns(subSelect.getSelectBody(), columns, getSelectAliases(subSelect.getSelectBody()));
@@ -619,6 +676,11 @@ public class TextToSqlSqlValidator {
         return aliases;
     }
 
+    /**
+     * 收集真实表和表别名。
+     *
+     * 例如 order_payment op 会记录 order_payment -> order_payment、op -> order_payment。
+     */
     private void addTableAlias(Map<String, String> tableAliases, FromItem fromItem) {
         if (!(fromItem instanceof Table table)) {
             return;
@@ -633,6 +695,11 @@ public class TextToSqlSqlValidator {
         }
     }
 
+    /**
+     * 构建当前 SELECT 的作用域。
+     *
+     * 作用域用于解析字段属于真实表、表别名，还是派生表。
+     */
     private SelectScope buildSelectScope(PlainSelect plainSelect) {
         Map<String, String> tableAliases = new LinkedHashMap<>();
         Map<String, Set<String>> derivedTableColumns = new LinkedHashMap<>();
@@ -645,6 +712,9 @@ public class TextToSqlSqlValidator {
         return new SelectScope(tableAliases, derivedTableColumns);
     }
 
+    /**
+     * 把一个 FROM/JOIN 项加入当前作用域。
+     */
     private void addFromItemToScope(
             Map<String, String> tableAliases,
             Map<String, Set<String>> derivedTableColumns,
@@ -654,6 +724,11 @@ public class TextToSqlSqlValidator {
         addDerivedTableAlias(derivedTableColumns, fromItem);
     }
 
+    /**
+     * 收集派生表别名和它输出的字段。
+     *
+     * 例如 FROM (select date(...) as stat_date) t 会记录 t -> [stat_date]。
+     */
     private void addDerivedTableAlias(Map<String, Set<String>> derivedTableColumns, FromItem fromItem) {
         if (!(fromItem instanceof SubSelect subSelect) || subSelect.getAlias() == null) {
             return;
@@ -665,6 +740,11 @@ public class TextToSqlSqlValidator {
         derivedTableColumns.put(alias, getSelectOutputNames(subSelect.getSelectBody()));
     }
 
+    /**
+     * 读取 SELECT 输出列名。
+     *
+     * 有别名用别名；没有别名且是普通字段时用字段名。
+     */
     private Set<String> getSelectOutputNames(SelectBody selectBody) {
         Set<String> outputNames = new LinkedHashSet<>();
         if (selectBody instanceof PlainSelect plainSelect) {
@@ -686,6 +766,11 @@ public class TextToSqlSqlValidator {
         return outputNames;
     }
 
+    /**
+     * 把字段上的表名或别名解析成真实表名。
+     *
+     * 派生表字段不属于真实物理表，返回空字符串，让后续字段白名单校验跳过。
+     */
     private String resolveTableName(Column column, SelectScope scope) {
         if (column.getTable() == null) {
             return "";
@@ -701,6 +786,9 @@ public class TextToSqlSqlValidator {
         return StringUtils.hasText(realTableName) ? realTableName : "";
     }
 
+    /**
+     * 把字段加入 table -> columns 映射，并保持去重。
+     */
     private void addColumnToMap(Map<String, List<String>> columnMap, String tableName, String columnName) {
         List<String> columns = columnMap.computeIfAbsent(tableName, ignored -> new ArrayList<>());
         if (!columns.contains(columnName)) {
@@ -746,6 +834,9 @@ public class TextToSqlSqlValidator {
         return unique(result);
     }
 
+    /**
+     * 合并两个 table -> columns 映射。
+     */
     private void mergeColumnMap(Map<String, List<String>> target, Map<String, List<String>> source) {
         for (Map.Entry<String, List<String>> entry : source.entrySet()) {
             for (String column : entry.getValue()) {
@@ -772,14 +863,25 @@ public class TextToSqlSqlValidator {
         return result;
     }
 
+    /**
+     * 空值转空字符串并去掉前后空格。
+     */
     private String trim(String value) {
         return value == null ? "" : value.trim();
     }
 
+    /**
+     * 清理 SQL 标识符。
+     *
+     * 目前主要去掉反引号，方便和 DDL Resource 里的表字段名比较。
+     */
     private String cleanSqlName(String value) {
         return trim(value).replace("`", "");
     }
 
+    /**
+     * 生成 table.column 形式的字段 key。
+     */
     private String columnKey(String tableName, String columnName) {
         return cleanSqlName(tableName) + "." + cleanSqlName(columnName);
     }
@@ -803,10 +905,16 @@ public class TextToSqlSqlValidator {
      * derivedTableColumns：派生表输出列，例如 t -> [stat_date, daily_order_count]。
      */
     private record SelectScope(Map<String, String> tableAliases, Map<String, Set<String>> derivedTableColumns) {
+        /**
+         * 判断某个别名是否是派生表。
+         */
         boolean isDerivedTable(String tableAlias) {
             return derivedTableColumns.containsKey(tableAlias);
         }
 
+        /**
+         * 判断某个字段是否是派生表输出列。
+         */
         boolean isDerivedColumn(String tableAlias, String columnName) {
             Set<String> columns = derivedTableColumns.get(tableAlias);
             return columns != null && columns.contains(columnName);

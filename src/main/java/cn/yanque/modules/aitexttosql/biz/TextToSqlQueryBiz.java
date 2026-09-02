@@ -42,13 +42,13 @@ public class TextToSqlQueryBiz {
      */
     public SqlExecutionResult executeSql(TextToSqlExecuteReq req) {
 
-        // 使用的表 和 字段在数据库都存在
+        // 第一步：SQL 结构校验。确认它是单条 SELECT，并且只访问 DDL Resource 里的表和字段。
         SqlValidationResult validation = sqlValidator.validate(req.getSql(), req.getTableDdlContext());
         if (!validation.isValid()) {
             return SqlExecutionResult.validationFailed(validation);
         }
 
-        // 用户是否有sql的表和字段权限
+        // 第二步：角色权限校验。SQL 合法不代表当前用户有权限查询这些表和字段。
         TextToSqlPermissionCheckResult permission = permissionChecker.check(req, validation);
         if (!permission.isAllowed()) {
             return SqlExecutionResult.permissionDenied(permission);
@@ -76,6 +76,11 @@ public class TextToSqlQueryBiz {
         );
     }
 
+    /**
+     * 限制最大返回行数。
+     *
+     * 前端和 Python 都可以传 maxRows，但系统级上限固定为 500，避免大结果集拖垮页面。
+     */
     private int normalizeMaxRows(Integer requestMaxRows) {
         int requestLimit = (requestMaxRows == null || requestMaxRows <= 0) ? 100 : requestMaxRows;
         return Math.min(requestLimit, SYSTEM_MAX_ROWS);

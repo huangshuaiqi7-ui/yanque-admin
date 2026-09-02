@@ -17,6 +17,9 @@ public class SqlExplainResult {
     private String message;
     private List<SqlExplainPlanRow> plans = new ArrayList<>();
 
+    /**
+     * 执行计划检查通过。
+     */
     public static SqlExplainResult success(List<SqlExplainPlanRow> plans) {
         SqlExplainResult result = new SqlExplainResult();
         result.setChecked(true);
@@ -26,6 +29,9 @@ public class SqlExplainResult {
         return result;
     }
 
+    /**
+     * 执行计划检查拒绝执行。
+     */
     public static SqlExplainResult denied(String message, List<SqlExplainPlanRow> plans) {
         SqlExplainResult result = new SqlExplainResult();
         result.setChecked(true);
@@ -35,6 +41,11 @@ public class SqlExplainResult {
         return result;
     }
 
+    /**
+     * 执行计划检查跳过。
+     *
+     * 通常表示 EXPLAIN 自身失败，调用方可以看到原因。
+     */
     public static SqlExplainResult skipped(String message) {
         SqlExplainResult result = new SqlExplainResult();
         result.setChecked(false);

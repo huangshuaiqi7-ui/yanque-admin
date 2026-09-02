@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aitexttosql.mapper.TextToSqlEvalAssertionResultMapper">
+    <resultMap id="AssertionResultMap" type="cn.yanque.modules.aitexttosql.pojo.entity.TextToSqlEvalAssertionResultEntity">
+        <id property="id" column="id"/>
+        <result property="evalResultId" column="eval_result_id"/>
+        <result property="evalAssertionId" column="eval_assertion_id"/>
+        <result property="actualKey" column="actual_key"/>
+        <result property="operator" column="operator"/>
+        <result property="expectedValue" column="expected_value"/>
+        <result property="actualValue" column="actual_value"/>
+        <result property="required" column="required"/>
+        <result property="passed" column="passed"/>
+        <result property="score" column="score"/>
+        <result property="failureType" column="failure_type"/>
+        <result property="reason" column="reason"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insertBatch">
+        insert into ai_text_to_sql_eval_assertion_result(
+            eval_result_id, eval_assertion_id, actual_key, operator, expected_value,
+            actual_value, required, passed, score, failure_type, reason, created_at
+        ) values
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.evalResultId}, #{item.evalAssertionId}, #{item.actualKey}, #{item.operator}, #{item.expectedValue},
+                #{item.actualValue}, #{item.required}, #{item.passed}, #{item.score}, #{item.failureType}, #{item.reason}, now()
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectByEvalResultId" resultMap="AssertionResultMap">
+        select * from ai_text_to_sql_eval_assertion_result
+        where eval_result_id = #{evalResultId}
+        order by id asc
+    </select>
+
+    <delete id="deleteByEvalResultId">
+        delete from ai_text_to_sql_eval_assertion_result
+        where eval_result_id = #{evalResultId}
+    </delete>
+</mapper>

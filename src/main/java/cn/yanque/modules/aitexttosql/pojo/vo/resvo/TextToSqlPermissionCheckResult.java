@@ -15,6 +15,9 @@ public class TextToSqlPermissionCheckResult {
     private List<String> deniedTables = new ArrayList<>();
     private List<String> deniedColumns = new ArrayList<>();
 
+    /**
+     * 数据权限校验通过。
+     */
     public static TextToSqlPermissionCheckResult allowed() {
         TextToSqlPermissionCheckResult result = new TextToSqlPermissionCheckResult();
         result.setAllowed(true);
@@ -22,6 +25,9 @@ public class TextToSqlPermissionCheckResult {
         return result;
     }
 
+    /**
+     * 数据权限校验拒绝。
+     */
     public static TextToSqlPermissionCheckResult denied(String reason) {
         TextToSqlPermissionCheckResult result = new TextToSqlPermissionCheckResult();
         result.setAllowed(false);

@@ -27,6 +27,11 @@ public class TextToSqlExplainChecker {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * 对 SQL 执行 EXPLAIN，并返回是否允许继续查询。
+     *
+     * EXPLAIN 自身失败时不直接抛错，而是返回 skipped，避免执行计划检查影响正常查询调试。
+     */
     public SqlExplainResult check(String sql) {
         try {
             List<SqlExplainPlanRow> plans = jdbcTemplate.query(
@@ -41,6 +46,11 @@ public class TextToSqlExplainChecker {
         }
     }
 
+    /**
+     * 根据执行计划判断是否放行。
+     *
+     * 当前规则很简单：真实业务表没有实际使用索引时拒绝执行。
+     */
     SqlExplainResult evaluatePlans(List<SqlExplainPlanRow> plans) {
         SqlExplainPlanRow noIndexPlan = findNoIndexPlan(plans);
         if (noIndexPlan != null) {
@@ -52,6 +62,9 @@ public class TextToSqlExplainChecker {
         return SqlExplainResult.success(plans);
     }
 
+    /**
+     * 找到第一条没有使用索引的真实表访问计划。
+     */
     private SqlExplainPlanRow findNoIndexPlan(List<SqlExplainPlanRow> plans) {
         for (SqlExplainPlanRow plan : plans) {
             if (shouldCheckIndex(plan) && !hasText(plan.getUsedKey())) {
@@ -77,6 +90,9 @@ public class TextToSqlExplainChecker {
                 && !"<union>".equals(tableName);
     }
 
+    /**
+     * 把 MySQL EXPLAIN 的一行结果转成前端可展示的对象。
+     */
     private SqlExplainPlanRow toPlanRow(ResultSet resultSet) throws SQLException {
         SqlExplainPlanRow row = new SqlExplainPlanRow();
         row.setId(text(resultSet, "id"));
@@ -97,11 +113,17 @@ public class TextToSqlExplainChecker {
         return row;
     }
 
+    /**
+     * 从 ResultSet 中安全读取文本列。
+     */
     private String text(ResultSet resultSet, String columnName) throws SQLException {
         Object value = resultSet.getObject(columnName);
         return value == null ? null : String.valueOf(value);
     }
 
+    /**
+     * 从 ResultSet 中安全读取 long 值。
+     */
     private Long longValue(ResultSet resultSet, String columnName) throws SQLException {
         Object value = resultSet.getObject(columnName);
         if (value instanceof Number number) {

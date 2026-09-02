@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yanque.modules.aitexttosql.mapper.TextToSqlEvalTaskMapper">
+    <resultMap id="TaskMap" type="cn.yanque.modules.aitexttosql.pojo.entity.TextToSqlEvalTaskEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="businessDomain" column="business_domain"/>
+        <result property="evalTarget" column="eval_target"/>
+        <result property="sampleCategory" column="sample_category"/>
+        <result property="status" column="status"/>
+        <result property="totalCount" column="total_count"/>
+        <result property="passCount" column="pass_count"/>
+        <result property="failCount" column="fail_count"/>
+        <result property="interruptedCount" column="interrupted_count"/>
+        <result property="passRate" column="pass_rate"/>
+        <result property="startedAt" column="started_at"/>
+        <result property="finishedAt" column="finished_at"/>
+        <result property="durationMs" column="duration_ms"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into ai_text_to_sql_eval_task(
+            name, business_domain, eval_target, sample_category, status,
+            total_count, pass_count, fail_count, interrupted_count, pass_rate, created_by, created_at, updated_at
+        ) values (
+            #{name}, #{businessDomain}, #{evalTarget}, #{sampleCategory}, #{status},
+            0, 0, 0, 0, 0, #{createdBy}, now(), now()
+        )
+    </insert>
+
+    <update id="updateRunning">
+        update ai_text_to_sql_eval_task
+        set status = 'RUNNING',
+            total_count = #{totalCount},
+            started_at = now(),
+            error_message = null,
+            updated_at = now()
+        where id = #{id}
+    </update>
+
+    <update id="updateFinished">
+        update ai_text_to_sql_eval_task
+        set status = #{status},
+            pass_count = #{passCount},
+            fail_count = #{failCount},
+            interrupted_count = #{interruptedCount},
+            pass_rate = #{passRate},
+            finished_at = now(),
+            duration_ms = #{durationMs},
+            error_message = #{errorMessage},
+            updated_at = now()
+        where id = #{id}
+    </update>
+
+    <update id="updateCounts">
+        update ai_text_to_sql_eval_task
+        set pass_count = #{passCount},
+            fail_count = #{failCount},
+            interrupted_count = #{interruptedCount},
+            pass_rate = #{passRate},
+            updated_at = now()
+        where id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="TaskMap">
+        select * from ai_text_to_sql_eval_task where id = #{id}
+    </select>
+
+    <select id="selectPage" resultMap="TaskMap">
+        select * from ai_text_to_sql_eval_task
+        <where>
+            <if test="keyword != null and keyword != ''">
+                and name like concat('%', #{keyword}, '%')
+            </if>
+            <if test="businessDomain != null and businessDomain != ''">
+                and business_domain = #{businessDomain}
+            </if>
+            <if test="evalTarget != null and evalTarget != ''">
+                and eval_target = #{evalTarget}
+            </if>
+            <if test="sampleCategory != null and sampleCategory != ''">
+                and sample_category = #{sampleCategory}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by created_at desc, id desc
+    </select>
+</mapper>

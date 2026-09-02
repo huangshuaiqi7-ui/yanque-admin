@@ -28,16 +28,25 @@ public class TextToSqlPermissionController {
         this.service = service;
     }
 
+    /**
+     * 查询 Text-to-SQL 权限配置页需要的业务域、表、字段树。
+     */
     @GetMapping("/schema-tree")
     public ApiResponse<List<TextToSqlSchemaTreeRes>> schemaTree() {
         return ApiResponse.success(service.schemaTree());
     }
 
+    /**
+     * 查询某个角色已经授权的字段。
+     */
     @GetMapping("/permissions/roles/{roleId}")
     public ApiResponse<TextToSqlRolePermissionRes> rolePermission(@PathVariable Long roleId) {
         return ApiResponse.success(service.rolePermission(roleId));
     }
 
+    /**
+     * 保存某个角色的字段授权。
+     */
     @PutMapping("/permissions/roles/{roleId}")
     public ApiResponse<Map<String, Long>> saveRolePermission(
             @PathVariable Long roleId,

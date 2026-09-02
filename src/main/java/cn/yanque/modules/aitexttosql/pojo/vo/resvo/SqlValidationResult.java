@@ -28,6 +28,9 @@ public class SqlValidationResult {
     private List<String> deniedColumns = new ArrayList<>();
     private List<String> maskedColumns = new ArrayList<>();
 
+    /**
+     * SQL 校验通过。
+     */
     public static SqlValidationResult success(
             String normalizedSql,
             List<String> usedTables,
@@ -42,6 +45,9 @@ public class SqlValidationResult {
         return result;
     }
 
+    /**
+     * SQL 校验失败。
+     */
     public static SqlValidationResult fail(String reason) {
         SqlValidationResult result = new SqlValidationResult();
         result.setValid(false);

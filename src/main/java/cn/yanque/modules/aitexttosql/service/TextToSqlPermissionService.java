@@ -90,6 +90,9 @@ public class TextToSqlPermissionService {
         return new ArrayList<>(domainMap.values());
     }
 
+    /**
+     * 查询某个角色已经拥有的 Text-to-SQL 字段权限。
+     */
     public TextToSqlRolePermissionRes rolePermission(Long roleId) {
         ensureRoleExists(roleId);
         List<TextToSqlRolePermissionEntity> rows = permissionMapper.selectByRoleId(roleId);
@@ -107,6 +110,11 @@ public class TextToSqlPermissionService {
         return res;
     }
 
+    /**
+     * 保存某个角色的 Text-to-SQL 字段权限。
+     *
+     * 当前采用全量覆盖：先删除旧授权，再插入本次提交的授权字段。
+     */
     @Transactional
     public void saveRolePermission(Long roleId, TextToSqlRolePermissionSaveReq req) {
         SysRoleEntity role = ensureRoleExists(roleId);
@@ -119,6 +127,9 @@ public class TextToSqlPermissionService {
         }
     }
 
+    /**
+     * 创建业务域节点。
+     */
     private TextToSqlSchemaTreeRes newDomain(TextToSqlTableEntity table) {
         TextToSqlSchemaTreeRes domain = new TextToSqlSchemaTreeRes();
         domain.setBusinessDomain(table.getBusinessDomain());
@@ -126,6 +137,9 @@ public class TextToSqlPermissionService {
         return domain;
     }
 
+    /**
+     * 确认角色存在，并返回角色实体。
+     */
     private SysRoleEntity ensureRoleExists(Long roleId) {
         SysRoleEntity role = roleId == null ? null : roleMapper.selectById(roleId);
         if (role == null) {
@@ -134,6 +148,11 @@ public class TextToSqlPermissionService {
         return role;
     }
 
+    /**
+     * 把前端勾选的字段权限转换成数据库授权行。
+     *
+     * 这里只保存 granted=true 的字段，并按 businessDomain/tableName/columnName 去重。
+     */
     private List<TextToSqlRolePermissionEntity> buildGrantedRows(SysRoleEntity role, TextToSqlRolePermissionSaveReq req) {
         List<TextToSqlRolePermissionEntity> result = new ArrayList<>();
         Set<String> seen = new LinkedHashSet<>();
@@ -164,6 +183,9 @@ public class TextToSqlPermissionService {
         return result;
     }
 
+    /**
+     * 校验授权字段必须存在于当前数据库表字段目录中。
+     */
     private void validateColumnsExist(List<TextToSqlRolePermissionEntity> grants) {
         if (grants.isEmpty()) {
             return;
