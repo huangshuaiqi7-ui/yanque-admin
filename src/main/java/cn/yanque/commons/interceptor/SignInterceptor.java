@@ -8,6 +8,7 @@ import cn.yanque.commons.apires.CommonErrorCode;
 import cn.yanque.commons.constant.JwtConstants;
 import cn.yanque.commons.context.UserContext;
 import cn.yanque.commons.exception.BusinessException;
+import cn.yanque.commons.utils.BearMcpRequestUtils;
 import cn.yanque.commons.utils.RedisUtils;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,6 +35,10 @@ public class SignInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        if (BearMcpRequestUtils.isTrustedBearMcpRequest(request)) {
+            return true;
+        }
+
         // SseEmitter 会触发 Servlet 异步分发，这不是前端发起的新请求，
         // 不能再次消费同一个 nonce，否则会被误判为重复提交。
         if (DispatcherType.ASYNC.equals(request.getDispatcherType())) {

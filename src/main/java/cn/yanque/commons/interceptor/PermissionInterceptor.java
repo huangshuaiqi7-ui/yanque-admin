@@ -6,6 +6,7 @@ import cn.yanque.commons.constant.RbacConstants;
 import cn.yanque.commons.context.UserContext;
 import cn.yanque.commons.exception.BusinessException;
 import cn.yanque.commons.service.RbacAuthService;
+import cn.yanque.commons.utils.BearMcpRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -32,6 +33,10 @@ public class PermissionInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        if (BearMcpRequestUtils.isTrustedBearMcpRequest(request)) {
+            return true;
+        }
+
         if (!(handler instanceof HandlerMethod handlerMethod)) {
             return true;
         }

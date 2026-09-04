@@ -7,6 +7,7 @@ import cn.yanque.commons.apires.CommonErrorCode;
 import cn.yanque.commons.constant.JwtConstants;
 import cn.yanque.commons.context.UserContext;
 import cn.yanque.commons.exception.BusinessException;
+import cn.yanque.commons.utils.BearMcpRequestUtils;
 import cn.yanque.commons.utils.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,6 +30,10 @@ public class TokenInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        if (BearMcpRequestUtils.isTrustedBearMcpRequest(request)) {
+            return true;
+        }
+
         //获取前端传递的token
         String token = getToken(request);
         // 验证token,是否为空

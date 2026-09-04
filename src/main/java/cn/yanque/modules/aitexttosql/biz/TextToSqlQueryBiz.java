@@ -57,14 +57,14 @@ public class TextToSqlQueryBiz {
         // 先拿执行计划，记录访问类型、索引、预估扫描行数、临时表和排序等信息。
         // 第一版只强制要求实际使用索引；临时表、排序和预估扫描行数先只返回展示。
         SqlExplainResult explain = explainChecker.check(validation.getNormalizedSql());
-        if (!explain.isAllowed()) {
-            return SqlExecutionResult.explainDenied(
-                    validation.getNormalizedSql(),
-                    validation,
-                    permission,
-                    explain
-            );
-        }
+//        if (!explain.isAllowed()) {
+//            return SqlExecutionResult.explainDenied(
+//                    validation.getNormalizedSql(),
+//                    validation,
+//                    permission,
+//                    explain
+//            );
+//        }
 
         int maxRows = normalizeMaxRows(req.getMaxRows());
         return SqlExecutionResult.success(
